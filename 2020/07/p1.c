@@ -7,7 +7,7 @@
 #define MAXLINE 256
 #define MAXCOLOR 64
 
-struct mapnode *parseinput(void);
+struct tnode *parseinput(void);
 int lgetline(char *line, int lim);
 int isdigit(char c);
 int getcolor(char *line, char *color);
@@ -15,26 +15,26 @@ int getcolor(char *line, char *color);
 int
 main()
 {
-	struct mapnode *bags;
+	struct tnode *bags;
 	struct bagnode *shiny;
 
 	bags = parseinput();
 
-	shiny = mapsearch(bags, "shiny gold");
+	shiny = tsearch(bags, "shiny gold");
 	if (shiny == NULL)
 		printf("no shiny bag\n");
 	else
-		printf("Part 1: %d\n", children(shiny)-1);
+		printf("Part 1: %d\n", ncontainers(shiny)-1);
 
-	mapfree(bags);
+	tfree(bags);
 
 	return 0;
 }
 
-struct mapnode *
+struct tnode *
 parseinput(void)
 {
-	struct mapnode *bags;
+	struct tnode *bags;
 	struct bagnode *outer;
 	struct bagnode *inner;
 	char line[MAXLINE];
@@ -49,19 +49,19 @@ parseinput(void)
 		}
 		color[i] = '\0';
 
-		outer = mapsearch(bags, color);
+		outer = tsearch(bags, color);
 		if (outer == NULL)
-			bags = mapadd(bags, outer = newbag(color));
+			bags = tadd(bags, outer = newbag(color));
 
 		while (!isdigit(line[++i])) /* skip */
 			;
 		while ((j = getcolor(&line[i], color)) > 0) {
 			i += j;
 
-			inner = mapsearch(bags, color);
+			inner = tsearch(bags, color);
 			if (inner == NULL)
-				bags = mapadd(bags, inner = newbag(color));
-			hold(outer, inner);
+				bags = tadd(bags, inner = newbag(color));
+			addcontainer(inner, outer);
 
 			/* skip */
 			while (line[i] != '.' && !isdigit(line[++i]))

@@ -1,25 +1,23 @@
-struct mapnode {
+struct tnode {
 	struct bagnode *bag;
-	struct mapnode *left;
-	struct mapnode *right;
+	struct tnode *left;
+	struct tnode *right;
 };
 
 struct bagnode {
 	char *color;
 	int visited;
-	int nholds;
-	int nheldby;
-	struct bagnode **holds;
-	struct bagnode **heldby;
+	int ncontainers;
+	struct bagnode **containers;
 };
 
 struct bagnode *newbag(char *color);
-void bagfree(struct bagnode *node);
-void hold(struct bagnode *outer, struct bagnode *inner);
-int children(struct bagnode *node);
+void bagfree(struct bagnode *bag);
+void addcontainer(struct bagnode *inner, struct bagnode *outer);
+int ncontainers(struct bagnode *bag);
 
-struct mapnode *mapadd(struct mapnode *node, struct bagnode *bag);
-void mapfree(struct mapnode *node);
-struct bagnode *mapsearch(struct mapnode *node, char *color);
-void mapprint(struct mapnode *node);
+struct tnode *tadd(struct tnode *node, struct bagnode *bag);
+void tfree(struct tnode *node);
+struct bagnode *tsearch(struct tnode *node, char *color);
+void tprint(struct tnode *node);
 

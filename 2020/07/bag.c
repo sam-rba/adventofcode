@@ -6,55 +6,45 @@
 
 #define MAXLINKS 32
 
-struct bagnode *bagalloc(void);
-
 struct bagnode *
 newbag(char *color)
 {
-	struct bagnode *node = bagalloc();
-	node->color = strdup(color);
-	node->visited = node->nholds = node->nheldby = 0;
-	node->holds = (struct bagnode **) malloc(MAXLINKS * sizeof(struct bagnode *));
-	node->heldby = (struct bagnode **) malloc(MAXLINKS * sizeof(struct bagnode *));
-	return node;
+	struct bagnode *bag = (struct bagnode *) malloc(sizeof(struct bagnode));
+	bag->color = strdup(color);
+	bag->visited = bag->ncontainers = 0;
+	bag->containers = (struct bagnode **) calloc(MAXLINKS, sizeof(struct bagnode *));
+	return bag;
 }
 
 void
-bagfree(struct bagnode *node)
+bagfree(struct bagnode *bag)
 {
-	free(node->holds);
-	free(node->heldby);
+	free(bag->color);
+	free(bag->containers);
+	free(bag);
 }
 
 void
-hold(struct bagnode *outer, struct bagnode *inner)
+addcontainer(struct bagnode *inner, struct bagnode *outer)
 {
-	if (outer->nholds == MAXLINKS-1 || inner->nheldby == MAXLINKS-1) {
-		printf("MAXLINKS exceeded.\n");
-	} else {
-		outer->holds[outer->nholds++] = inner;
-		inner->heldby[inner->nheldby++] = outer;
+	if (inner->ncontainers == MAXLINKS-1) {
+		printf("MAXLINKS exceeded\n");
+		return;
 	}
+	inner->containers[inner->ncontainers++] = outer;
 }
 
 int
-children(struct bagnode *node)
+ncontainers(struct bagnode *bag)
 {
-	int i, count;
-
-	if (node->visited)
+	if (bag->visited)
 		return 0;
 
-	count = node->visited = 1;
-	for (i = 0; i < node->nheldby; i++) {
-		count += children(node->heldby[i]);
+	int i, count;
+	count = bag->visited = 1;
+	for (i = 0; i < bag->ncontainers; i++) {
+		count += ncontainers(bag->containers[i]);
 	}
 	return count;
-}
-
-struct bagnode *
-bagalloc(void)
-{
-	return (struct bagnode *) malloc(sizeof(struct bagnode));
 }
 
