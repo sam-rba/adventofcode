@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXLINE 64
+#include "header.h"
 
-int lgetline(char *s, int lim);
 char ldigit(char *s);
 char rdigit(char *s);
-int isdigit(char c);
 
 int
 main()
@@ -35,20 +33,6 @@ main()
 	return 0;
 }
 
-int
-lgetline(char *s, int lim)
-{
-	int i, c;
-
-	i = 0;
-	while (--lim > 0 && (c=getchar()) != EOF && c != '\n')
-		s[i++] = c;
-	if (lim == 0)
-		printf("Line exceeded limit, truncating\n");
-	s[i] = '\0';
-	return i;
-}
-
 char
 ldigit(char *s)
 {
@@ -68,7 +52,4 @@ rdigit(char *s)
 			return s[i];
 	return '\0';
 }
-
-int
-isdigit(char c) { return '1' <= c && c <= '9'; }
 
