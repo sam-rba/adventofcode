@@ -1,16 +1,14 @@
 include ../config.mk
 
-p2: p2.c share.o
+all: p1 p2
+
+p2: p2.o share.o
 	tcc -o $@ ${CFLAGS} $^
 
-p2.c: header.h
-
-p1: p1.c share.o
+p1: p1.o share.o
 	tcc -o $@ ${CFLAGS} $^
 
-p1.c: header.h
+%.o: %.c header.h
+	tcc -c ${CFLAGS} $<
 
-share.o: share.c
-	tcc -c ${CFLAGS} $^
-
-share.c: header.h
+.PHONY: all
