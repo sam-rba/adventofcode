@@ -35,7 +35,7 @@ main()
 int
 ratio(char *line0, char *line1, char *line2)
 {
-	int sum, geari, part1, part2, i;
+	int sum, geari, part1, part2;
 	int *partp;
 
 	sum = 0;
@@ -93,13 +93,11 @@ ratio(char *line0, char *line1, char *line2)
 }
 
 int
-partat(char *line, int pos, int *part)
+partat(char *line, int i, int *part)
 {
-	int i;
-
-	if (isdigit(line[pos])) {
+	if (isdigit(line[i])) {
 		if (part != NULL) {
-			for (i = pos-1; i >= 0 && isdigit(line[i]); i--)
+			while (--i >= 0 && isdigit(line[i]))
 				;
 			while (isdigit(line[++i]))
 				*part = (*part * 10) + (line[i] - '0');
@@ -110,13 +108,11 @@ partat(char *line, int pos, int *part)
 }
 
 int
-parttoleft(char *line, int pos, int *part)
+parttoleft(char *line, int i, int *part)
 {
-	int i;
-
-	if (pos > 0 && isdigit(line[pos-1])) {
+	if (i > 0 && isdigit(line[i-1])) {
 		if (part != NULL) {
-			for (i = pos-2; i >= 0 && isdigit(line[i]); i--)
+			for (i -= 2; i >= 0 && isdigit(line[i]); i--)
 				;
 			while (isdigit(line[++i]))
 				*part = (*part * 10) + (line[i] - '0');
@@ -127,13 +123,12 @@ parttoleft(char *line, int pos, int *part)
 }
 
 int
-parttoright(char *line, int pos, int *part)
+parttoright(char *line, int i, int *part)
 {
-	int i;
-	if (isdigit(line[pos+1])) {
+	if (isdigit(line[++i])) {
 		if (part != NULL)
-			for (i = pos+1; isdigit(line[i]); i++)
-				*part = (*part * 10) + (line[i] - '0');
+			while (isdigit(line[i]))
+				*part = (*part * 10) + (line[i++] - '0');
 		return 1;
 	}
 	return 0;
