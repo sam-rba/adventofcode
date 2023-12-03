@@ -3,6 +3,9 @@
 #include "header.h"
 
 int ratio(char *line0, char *line1, char *line2);
+int partat(char *line, int pos, int *part);
+int parttoleft(char *line, int pos, int *part);
+int parttoright(char *line, int pos, int *part);
 
 int
 main()
@@ -41,80 +44,98 @@ ratio(char *line0, char *line1, char *line2)
 		partp = &part1;
 		if (line1[geari] == '*') { /* look for adjacent part nums */
 			/* top middle */
-			if (isdigit(line0[geari])) {
-				for (i = geari-1; i >= 0 && isdigit(line0[i]); i--)
-					;
-				while (isdigit(line0[++i]))
-					*partp = (*partp * 10) + (line0[i] - '0');
+			if (partat(line0, geari, partp)) {
 				partp = &part2;
 			} else {
 				/* top left */
-				if (geari > 0 && isdigit(line0[geari-1])) {
-					for (i = geari-2; i >= 0 && isdigit(line0[i]); i--)
-						;
-					while (isdigit(line0[++i]))
-						*partp = (*partp * 10) + (line0[i] - '0');
+				if (parttoleft(line0, geari, partp))
 					partp = &part2;
-				}
+
 				/* top right */
-				if (isdigit(line0[geari+1])) {
-					for (i = geari+1; isdigit(line0[i]); i++)
-						*partp = (*partp * 10) + (line0[i] - '0');
+				if (parttoright(line0, geari, partp))
 					partp = (partp == &part1) ? &part2 : NULL;
-				}
 			}
-
 			/* left */
-			if (geari > 0 && isdigit(line1[geari-1])) {
+			if (parttoleft(line1, geari, partp)) {
 				if (partp == NULL) /* more than 2 adj. parts */
 					continue;
-				for (i = geari-2; i >= 0 && isdigit(line1[i]); i--)
-					;
-				while (isdigit(line1[++i]))
-					*partp = (*partp * 10) + (line1[i] - '0');
 				partp = (partp == &part1) ? &part2 : NULL;
 			}
-
 			/* right */
-			if (isdigit(line1[geari+1])) {
+			if (parttoright(line1, geari, partp)) {
 				if (partp == NULL) /* more than 2 adj. parts */
 					continue;
-				for (i = geari+1; isdigit(line1[i]); i++)
-					*partp = (*partp * 10) + (line1[i] - '0');
 				partp = (partp == &part1) ? &part2 : NULL;
 			}
-
 			/* bottom middle */
-			if (isdigit(line2[geari])) {
+			if (partat(line2, geari, partp)) {
 				if (partp == NULL) /* more than 2 adj. parts */
 					continue;
-				for (i = geari-1; i >= 0 && isdigit(line2[i]); i--)
-					;
-				while (isdigit(line2[++i]))
-					*partp = (*partp * 10) + (line2[i] - '0');
 				partp = (partp == &part1) ? &part2 : NULL;
 			} else {
 				/* bottom left */
-				if (geari > 0 && isdigit(line2[geari-1])) {
+				if (parttoleft(line2, geari, partp)) {
 					if (partp == NULL) /* more than 2 adj. parts */
 						continue;
-					for (i = geari-2; i >= 0 && isdigit(line2[i]); i--)
-						;
-					while (isdigit(line2[++i]))
-						*partp = (*partp * 10) + (line2[i] - '0');
 					partp = (partp == &part1) ? &part2 : NULL;
 				}
 				/* bottom right */
-				if (isdigit(line2[geari+1])) {
+				if (parttoright(line2, geari, partp)) {
 					if (partp == NULL) /* more than 2 adj. parts */
 						continue;
-					for (i = geari+1; isdigit(line2[i]); i++)
-						*partp = (*partp * 10) + (line2[i] - '0');
+					partp = (partp == &part1) ? &part2 : NULL;
 				}
 			}
 			sum += part1 * part2;
 		}
 	}
 	return sum;
+}
+
+int
+partat(char *line, int pos, int *part)
+{
+	int i;
+
+	if (isdigit(line[pos])) {
+		if (part != NULL) {
+			for (i = pos-1; i >= 0 && isdigit(line[i]); i--)
+				;
+			while (isdigit(line[++i]))
+				*part = (*part * 10) + (line[i] - '0');
+		}
+		return 1;
+	}
+	return 0;
+}
+
+int
+parttoleft(char *line, int pos, int *part)
+{
+	int i;
+
+	if (pos > 0 && isdigit(line[pos-1])) {
+		if (part != NULL) {
+			for (i = pos-2; i >= 0 && isdigit(line[i]); i--)
+				;
+			while (isdigit(line[++i]))
+				*part = (*part * 10) + (line[i] - '0');
+		}
+		return 1;
+	}
+	return 0;
+}
+
+int
+parttoright(char *line, int pos, int *part)
+{
+	int i;
+	if (isdigit(line[pos+1])) {
+		if (part != NULL)
+			for (i = pos+1; isdigit(line[i]); i++)
+				*part = (*part * 10) + (line[i] - '0');
+		return 1;
+	}
+	return 0;
 }
 
