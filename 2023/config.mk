@@ -1,1 +1,1 @@
-CFLAGS = -std=c99 -pedantic -Wall -Wnodeprecated-declarations
+CFLAGS = -std=c99 -pedantic -Wall -Wno-deprecated-declarations
