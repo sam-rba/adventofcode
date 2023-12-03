@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAXLINE 256
+#include "header.h"
 
-void zero(char *line);
 int partsinwindow(char *line0, char *line1, char *line2);
-void shiftwindow(char *line0, char *line1, char *line2);
 int adjacent(char *line0, char *line1, char *line2, int pos);
 int issymbol(char c);
-int isdigit(char c);
 
 int
 main()
@@ -35,15 +32,6 @@ main()
 	return 0;
 }
 
-void
-zero(char *line)
-{
-	int i;
-	for (i = 0; i < MAXLINE-1; i++)
-		line[i] = '.';
-	line[MAXLINE-1] = '\0';
-}
-
 int
 partsinwindow(char *line0, char *line1, char *line2)
 {
@@ -63,13 +51,6 @@ partsinwindow(char *line0, char *line1, char *line2)
 			break;
 	}
 	return sum;
-}
-
-void
-shiftwindow(char *line0, char *line1, char *line2)
-{
-	strcpy(line0, line1);
-	strcpy(line1, line2);
 }
 
 int
@@ -95,11 +76,5 @@ int
 issymbol(char c)
 {
 	return c != '.' && !isdigit(c);
-}
-
-int
-isdigit(char c)
-{
-	return '0' <= c && c <= '9';
 }
 
