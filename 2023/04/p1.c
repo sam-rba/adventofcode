@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "header.h"
-#include "stack.h"
 
 int
 main()
@@ -42,14 +41,7 @@ main()
 		}
 		/* get numbers we have */
 		stfree(have);
-		while (line[++i] != '\0') {
-			if (isdigit(line[i])) {
-				num = (num * 10) + (line[i] - '0');
-			} else if (num > 0) {
-				have = stpush(have, num);
-				num = 0;
-			}
-		}
+		have = pushnums(have, line, ++i);
 
 		/* check which winning numbers we have */
 		qsort(winning, nwinning, sizeof(int), cmpint);
