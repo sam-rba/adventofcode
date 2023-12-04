@@ -2,14 +2,14 @@
 #include <stdio.h>
 
 #include "header.h"
+#include "btree.h"
 
 int
 main()
 {
 	FILE *file;
 	char line[MAXLINE];
-	/* TODO: use binary tree */
-	int winning[MAXWINNING], nwinning;
+	BTree *winning;
 	Stack *have;
 	int i, num, cardpoints, totalpoints;
 
@@ -17,6 +17,7 @@ main()
 		printf("failed to open %s\n", FNAME);
 		return 1;
 	}
+	winning = NULL;
 	have = NULL;
 	totalpoints = 0;
 	while (fgets(line, MAXLINE, file) != NULL) {
@@ -24,32 +25,28 @@ main()
 		for (i = 6; line[i] != ':'; i++)
 			;
 
-		nwinning = num = 0;
 		/* get winning numbers */
+		num = 0;
+		btfree(winning);
+		winning = NULL;
 		while (line[++i] != '|') {
 			if (isdigit(line[i])) {
 				num = (num * 10) + (line[i] - '0');
-			} else if (nwinning < MAXWINNING) {
-				if (num > 0)
-					winning[nwinning++] = num;
+			} else if (num > 0) {
+				winning = btadd(winning, num);
 				num = 0;
-			} else {
-				printf("MAXWINNING exceeded\n");
-				fclose(file);
-				return 1;
 			}
 		}
 		/* get numbers we have */
 		stfree(have);
+		have = NULL;
 		have = pushnums(have, line, ++i);
 
 		/* check which winning numbers we have */
-		qsort(winning, nwinning, sizeof(int), cmpint);
 		cardpoints = 0;
 		while (have != NULL) {
 			have = stpop(have, &num);
-			if (bsearch(&num, winning, nwinning, sizeof(int), cmpint)
-					!= NULL) /* number we have is in winning set */
+			if (btcontains(winning, num))
 				cardpoints = (cardpoints == 0) ? 1 : cardpoints*2;
 		}
 		totalpoints += cardpoints;
@@ -57,6 +54,8 @@ main()
 
 	printf("Part 1: %d\n", totalpoints);
 
+	stfree(have);
+	btfree(winning);
 	fclose(file);
 	return 0;
 }

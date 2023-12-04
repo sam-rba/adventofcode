@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "header.h"
+#include "btree.h"
 
 #define MAXCARDS 256
 
@@ -10,7 +11,7 @@ main()
 {
 	FILE *file;
 	char line[MAXLINE];
-	int winning[MAXWINNING], nwinning;
+	BTree *winning;
 	Stack *have;
 	int i, num, card, cards, nhavewinning;
 	int copies[MAXCARDS];
@@ -22,6 +23,7 @@ main()
 		printf("failed to open %s\n", FNAME);
 		return 1;
 	}
+	winning = NULL;
 	have = NULL;
 	cards = 0;
 	for (card = 1; fgets(line, MAXLINE, file) != NULL; card++) {
@@ -29,32 +31,27 @@ main()
 		for (i = 6; line[i] != ':'; i++)
 			;
 
-		nwinning = num = 0;
 		/* get winning numbers */
+		num = 0;
+		btfree(winning);
+		winning = NULL;
 		while (line[++i] != '|') {
 			if (isdigit(line[i])) {
 				num = (num * 10) + (line[i] - '0');
-			} else if (nwinning < MAXWINNING) {
-				if (num > 0)
-					winning[nwinning++] = num;
+			} else if (num > 0) {
+				winning = btadd(winning, num);
 				num = 0;
-			} else {
-				printf("MAXWINNING exceeded\n");
-				fclose(file);
-				return 1;
 			}
 		}
 		/* get numbers we have */
 		stfree(have);
+		have = NULL;
 		have = pushnums(have, line, ++i);
 
-		/* check how many winning numbers we have */
-		qsort(winning, nwinning, sizeof(int), cmpint);
 		nhavewinning = 0; /* winning numbers we have */
 		while (have != NULL) {
-			have =stpop(have, &num);
-			if (bsearch(&num, winning, nwinning, sizeof(int), cmpint)
-					!= NULL) { /* number we have is in winning set */
+			have = stpop(have, &num);
+			if (btcontains(winning, num)) {
 				if (card + ++nhavewinning >= MAXCARDS) {
 					printf("MAXCARDS exceeded\n");
 					fclose(file);
@@ -64,13 +61,14 @@ main()
 				}
 			}
 		}
-
 		cards += copies[card] + 1;
 	}
 
 
 	printf("Part 2: %d\n", cards);
 
+	stfree(have);
+	btfree(winning);
 	fclose(file);
 	return 0;
 }
