@@ -2,8 +2,11 @@ include ../config.mk
 
 CC = tcc
 
-p1: p1.o
+p2: p2.o share.o
 	${CC} -o $@ ${CFLAGS} $^
 
-%.o: %.c
+p1: p1.o share.o
+	${CC} -o $@ ${CFLAGS} $^
+
+%.o: %.c header.h
 	${CC} -c ${CFLAGS} $<

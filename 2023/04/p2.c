@@ -3,23 +3,28 @@
 
 #include "header.h"
 
+#define MAXCARDS 256
+
 int
 main()
 {
 	FILE *file;
 	char line[MAXLINE];
-	/* TODO: use binary tree and stack */
 	int winning[MAXWINNING], have[MAXHAVE];
 	int nwinning, nhave;
-	int i, num, cardpoints, totalpoints;
+	int i, num, card, cards;
+	int copies[MAXCARDS];
+
+	for (i = 0; i < MAXCARDS; i++)
+		copies[i] = 0;
 
 	if ((file = fopen(FNAME, "r")) == NULL) {
 		printf("failed to open %s\n", FNAME);
 		return 1;
 	}
 
-	totalpoints = 0;
-	while (fgets(line, MAXLINE, file) != NULL) {
+	cards = 0;
+	for (card = 1; fgets(line, MAXLINE, file) != NULL; card++) {
 		/* skip `Card %d:` */
 		for (i = 6; line[i] != ':'; i++)
 			;
@@ -54,17 +59,27 @@ main()
 			}
 		}
 
-		/* check which winning numbers we have */
+		/* check how many winning numbers we have */
 		qsort(winning, nwinning, sizeof(int), cmpint);
-		cardpoints = 0;
-		while (--nhave >= 0)
+		num = 0; /* winning numbers we have */
+		while (--nhave >= 0) {
 			if (bsearch(&have[nhave], winning, nwinning, sizeof(int), cmpint)
-					!= NULL) /* number we have is in winning set */
-				cardpoints = (cardpoints == 0) ? 1 : cardpoints*2;
-		totalpoints += cardpoints;
+					!= NULL) { /* number we have is in winning set */
+				if (card + ++num >= MAXCARDS) {
+					printf("MAXCARDS exceeded\n");
+					fclose(file);
+					return 1;
+				} else {
+					copies[card + num] += copies[card] + 1;
+				}
+			}
+		}
+
+		cards += copies[card] + 1;
 	}
 
-	printf("Part 1: %d\n", totalpoints);
+
+	printf("Part 2: %d\n", cards);
 
 	fclose(file);
 	return 0;
