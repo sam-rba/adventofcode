@@ -32,12 +32,13 @@ btcontains(BTree *bt, int data)
 }
 
 void
-btfree(BTree *bt)
+btfree(BTree **bt)
 {
-	if (bt == NULL)
+	if (*bt == NULL)
 		return;
-	btfree(bt->left);
-	btfree(bt->right);
-	free(bt);
+	btfree(&((*bt)->left));
+	btfree(&((*bt)->right));
+	free(*bt);
+	*bt = NULL;
 }
 

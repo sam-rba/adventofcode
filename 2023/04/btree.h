@@ -7,5 +7,5 @@ typedef struct btnode BTree;
 
 BTree *btadd(BTree *bt, int data);
 int btcontains(BTree *bt, int data);
-void btfree(BTree *bt);
+void btfree(BTree **bt);
 

@@ -40,11 +40,12 @@ stprint(Stack *st)
 }
 
 void
-stfree(Stack *st)
+stfree(Stack **st)
 {
-	if (st == NULL)
+	if (*st == NULL)
 		return;
-	stfree(st->next);
-	free(st);
+	stfree(&((*st)->next));
+	free(*st);
+	*st = NULL;
 }
 

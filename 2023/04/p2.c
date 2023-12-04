@@ -33,8 +33,7 @@ main()
 
 		/* get winning numbers */
 		num = 0;
-		btfree(winning);
-		winning = NULL;
+		btfree(&winning);
 		while (line[++i] != '|') {
 			if (isdigit(line[i])) {
 				num = (num * 10) + (line[i] - '0');
@@ -44,8 +43,7 @@ main()
 			}
 		}
 		/* get numbers we have */
-		stfree(have);
-		have = NULL;
+		stfree(&have);
 		have = pushnums(have, line, ++i);
 
 		nhavewinning = 0; /* winning numbers we have */
@@ -67,8 +65,8 @@ main()
 
 	printf("Part 2: %d\n", cards);
 
-	stfree(have);
-	btfree(winning);
+	stfree(&have);
+	btfree(&winning);
 	fclose(file);
 	return 0;
 }
