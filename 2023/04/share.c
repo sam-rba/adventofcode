@@ -7,19 +7,36 @@ isdigit(char c)
 }
 
 Stack *
-pushnums(Stack *st, const char *line, int start)
+pushnums(Stack *stk, const char *str, int start)
 {
 	int num;
 
 	num = 0;
-	for (; line[start] != '\0'; start++) {
-		if (isdigit(line[start])) {
-			num = (num * 10) + (line[start] - '0');
+	for (; str[start] != '\0'; start++) {
+		if (isdigit(str[start])) {
+			num = (num * 10) + (str[start] - '0');
 		} else if (num > 0) {
-			st = stpush(st, num);
+			stk = stpush(stk, num);
 			num = 0;
 		}
 	}
-	return st;
+	return stk;
+}
+
+BTree *
+addnums(BTree *btr, const char *str, int *i, char delim)
+{
+	int num;
+
+	num = 0;
+	while (str[(*i)++] != delim) {
+		if (isdigit(str[*i])) {
+			num = (num * 10) + (str[*i] - '0');
+		} else if (num > 0) {
+			btr = btadd(btr, num);
+			num = 0;
+		}
+	}
+	return btr;
 }
 

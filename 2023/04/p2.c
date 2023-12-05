@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "header.h"
-#include "btree.h"
 
 #define MAXCARDS 256
 
@@ -32,16 +31,8 @@ main()
 			;
 
 		/* get winning numbers */
-		num = 0;
 		btfree(&winning);
-		while (line[++i] != '|') {
-			if (isdigit(line[i])) {
-				num = (num * 10) + (line[i] - '0');
-			} else if (num > 0) {
-				winning = btadd(winning, num);
-				num = 0;
-			}
-		}
+		winning = addnums(winning, line, &i, '|');
 		/* get numbers we have */
 		stfree(&have);
 		have = pushnums(have, line, ++i);
@@ -61,7 +52,6 @@ main()
 		}
 		cards += copies[card] + 1;
 	}
-
 
 	printf("Part 2: %d\n", cards);
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "stack.h"
+#include "header.h"
 
 Stack *
 stpush(Stack *st, const int data)
@@ -26,17 +26,6 @@ stpop(Stack *st, int *data)
 	head = st->next;
 	free(st);
 	return head;
-}
-
-void
-stprint(Stack *st)
-{
-	if (st == NULL) {
-		putchar('\n');
-		return;
-	}
-	printf("%d, ", st->data);
-	stprint(st->next);
 }
 
 void

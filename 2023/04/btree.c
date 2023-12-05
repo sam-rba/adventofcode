@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "btree.h"
+#include "header.h"
 
 BTree *
 btadd(BTree *bt, int data)
