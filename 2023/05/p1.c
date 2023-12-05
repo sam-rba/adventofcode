@@ -13,7 +13,8 @@ struct map {
 	int len;
 };
 
-int readseeds(Seed seeds[], int *nseeds, char line[]);
+int readseeds(Seed seeds[], const char line[]);
+void readmap(struct map *mapp, const char line[]);
 void applymaps(Seed seeds[], int nseeds, const struct map maps[], int nmaps);
 Seed min(const Seed seeds[], int nseeds);
 int isdigit(char c);
@@ -26,8 +27,7 @@ main()
 	Seed seeds[SEEDS];
 	int nseeds;
 	int i;
-	struct map maps[MAPS];
-	int nmaps;
+	struct map maps[MAPS], *mapp;
 
 	if ((file = fopen(FNAME, "r")) == NULL) {
 		printf("failed to open %s\n", FNAME);
@@ -35,7 +35,7 @@ main()
 	}
 
 	/* read seeds */
-	if (fgets(line, MAXLINE, file) == NULL || readseeds(seeds, &nseeds, line) < 0) {
+	if (fgets(line, MAXLINE, file) == NULL || (nseeds = readseeds(seeds, line)) < 1) {
 		printf("input missing seed list\n");
 		fclose(file);
 		return 1;
@@ -45,27 +45,20 @@ main()
 		printf("%lu ", seeds[i]);
 	putchar('\n');
 
-	nmaps = 0;
+	mapp = maps;
 	while (fgets(line, MAXLINE, file) != NULL) {
 		if (isdigit(line[0])) {
-			if (nmaps >= MAPS) {
+			if (mapp >= maps+MAPS) {
 				printf("MAPS exceeded\n");
 				break;
 			}
-			maps[nmaps].dst = maps[nmaps].src = maps[nmaps].len = 0L;
-			for (i = 0; isdigit(line[i]); i++)
-				maps[nmaps].dst = (maps[nmaps].dst * 10) + (line[i] - '0');
-			while (isdigit(line[++i]))
-				maps[nmaps].src = (maps[nmaps].src * 10) + (line[i] - '0');
-			while (isdigit(line[++i]))
-				maps[nmaps].len = (maps[nmaps].len * 10) + (line[i] - '0');
-			nmaps++;
+			readmap(mapp++, line);
 		} else {
-			applymaps(seeds, nseeds, maps, nmaps);
-			nmaps = 0;
+			applymaps(seeds, nseeds, maps, mapp-maps);
+			mapp = maps;
 		}
 	}
-	applymaps(seeds, nseeds, maps, nmaps);
+	applymaps(seeds, nseeds, maps, mapp-maps);
 	printf("Part 1: %lu\n", min(seeds, nseeds));
 
 	fclose(file);
@@ -73,29 +66,43 @@ main()
 }
 
 int
-readseeds(Seed seeds[], int *nseeds, char line[])
+readseeds(Seed seeds[], const char line[])
 {
-	int i;
+	int i, nseeds;
 
 	for (i = 0; line[i] != '\0' && line[i] != ':'; i++)
 		;
 	if (line[i] == '\0')
 		return -1;
 
-	seeds[*nseeds = 0] = 0;
+	seeds[nseeds = 0] = 0;
 	while (line[++i] != '\0') {
 		if (isdigit(line[i])) {
-			seeds[*nseeds] = (seeds[*nseeds] * 10) + (line[i] - '0');
-		} else if (seeds[*nseeds] != 0) {
-			if (++(*nseeds) < SEEDS) {
-				seeds[*nseeds] = 0;
+			seeds[nseeds] = (seeds[nseeds] * 10) + (line[i] - '0');
+		} else if (seeds[nseeds] != 0) {
+			if (++nseeds < SEEDS) {
+				seeds[nseeds] = 0;
 			} else {
 				printf("SEEDS exceeded\n");
-				return -1;
+				break;
 			}
 		}
 	}
-	return 0;
+	return nseeds;
+}
+
+void
+readmap(struct map *mapp, const char line[])
+{
+	int i;
+
+	mapp->dst = mapp->src = mapp->len = 0L;
+	for (i = 0; isdigit(line[i]); i++)
+		mapp->dst = (mapp->dst * 10) + (line[i] - '0');
+	while (isdigit(line[++i]))
+		mapp->src = (mapp->src * 10) + (line[i] - '0');
+	while (isdigit(line[++i]))
+		mapp->len = (mapp->len * 10) + (line[i] - '0');
 }
 
 void
