@@ -4,8 +4,6 @@
 
 #define SEEDS 24
 
-typedef unsigned long Seed;
-
 int readseeds(Seed seeds[], const char line[]);
 void applymaps(Seed seeds[], int nseeds, const struct map maps[], int nmaps);
 Seed min(const Seed seeds[], int nseeds);
@@ -17,7 +15,6 @@ main()
 	char line[MAXLINE];
 	Seed seeds[SEEDS];
 	int nseeds;
-	int i;
 	struct map maps[MAPS], *mapp;
 
 	if ((file = fopen(FNAME, "r")) == NULL) {

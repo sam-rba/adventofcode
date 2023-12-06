@@ -22,7 +22,6 @@ main()
 	char line[MAXLINE];
 	struct seedrange seeds[SEEDRANGES];
 	int nseeds;
-	int i;
 	struct map maps[MAPS], *mapp;
 
 	if ((file = fopen(FNAME, "r")) == NULL) {
