@@ -15,6 +15,18 @@ readmap(struct map *mapp, const char line[])
 }
 
 int
+inwindow(unsigned long x, unsigned long winstart, int winlen)
+{
+	return (winstart <= x) && (x < winstart + winlen);
+}
+
+Seed
+srcend(const struct map *m)
+{
+	return m->src + (Seed) m->len;
+}
+
+int
 isdigit(char c)
 {
 	return '0' <= c && c <= '9';

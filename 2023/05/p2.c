@@ -11,6 +11,7 @@ struct seedrange {
 
 int readseedranges(struct seedrange seeds[], const char line[]);
 int applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nmaps);
+Seed end(const struct seedrange *seed);
 void splitrange(struct seedrange *dst, struct seedrange *src, int i);
 Seed min(const struct seedrange seeds[], int nseeds);
 
@@ -99,9 +100,8 @@ applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nma
 
 	for (i = 0; i < nseeds; i++) {
 		for (j = 0; j < nmaps; j++) {
-			if (maps[j].src <= seeds[i].start
-					&& seeds[i].start < maps[j].src + maps[j].len) {
-				if (seeds[i].start + seeds[i].len >= maps[j].src + maps[j].len) {
+			if (inwindow(seeds[i].start, maps[j].src, maps[j].len)) {
+				if (end(&seeds[i]) >= srcend(&maps[j])) {
 					if (++nseeds < SEEDRANGES) {
 						splitrange(&seeds[nseeds-1], &seeds[i],
 								maps[j].src + maps[j].len);
@@ -116,6 +116,12 @@ applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nma
 		}
 	}
 	return nseeds;
+}
+
+Seed
+end(const struct seedrange *seed)
+{
+	return seed->start + (Seed) seed->len;
 }
 
 void

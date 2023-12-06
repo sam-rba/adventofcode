@@ -11,5 +11,7 @@ struct map {
 };
 
 void readmap(struct map *mapp, const char line[]);
+int inwindow(unsigned long x, unsigned long winstart, int winlen);
+Seed srcend(const struct map *m);
 int isdigit(char c);
 

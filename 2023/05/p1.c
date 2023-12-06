@@ -84,7 +84,7 @@ applymaps(Seed seeds[], int nseeds, const struct map maps[], int nmaps)
 	int i, j;
 	for (i = 0; i < nseeds; i++) {
 		for (j = 0; j < nmaps; j++) {
-			if (maps[j].src <= seeds[i] && seeds[i] < maps[j].src + maps[j].len) {
+			if (inwindow(seeds[i], maps[j].src, maps[j].len)) {
 				seeds[i] = seeds[i] - maps[j].src + maps[j].dst;
 				break;
 			}
