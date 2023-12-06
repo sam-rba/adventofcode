@@ -1,23 +1,14 @@
 #include <stdio.h>
 
-#define MAXLINE 256
+#include "header.h"
+
 #define SEEDS 24
-#define MAPS 48
-#define FNAME "/dev/stdin"
 
 typedef unsigned long Seed;
 
-struct map {
-	Seed dst;
-	Seed src;
-	int len;
-};
-
 int readseeds(Seed seeds[], const char line[]);
-void readmap(struct map *mapp, const char line[]);
 void applymaps(Seed seeds[], int nseeds, const struct map maps[], int nmaps);
 Seed min(const Seed seeds[], int nseeds);
-int isdigit(char c);
 
 int
 main()
@@ -34,16 +25,12 @@ main()
 		return 1;
 	}
 
-	/* read seeds */
-	if (fgets(line, MAXLINE, file) == NULL || (nseeds = readseeds(seeds, line)) < 1) {
+	if (fgets(line, MAXLINE, file) == NULL
+			|| (nseeds = readseeds(seeds, line)) < 1) {
 		printf("input missing seed list\n");
 		fclose(file);
 		return 1;
 	}
-	printf("seeds: ");
-	for (i = 0; i < nseeds; i++)
-		printf("%lu ", seeds[i]);
-	putchar('\n');
 
 	mapp = maps;
 	while (fgets(line, MAXLINE, file) != NULL) {
@@ -92,20 +79,6 @@ readseeds(Seed seeds[], const char line[])
 }
 
 void
-readmap(struct map *mapp, const char line[])
-{
-	int i;
-
-	mapp->dst = mapp->src = mapp->len = 0L;
-	for (i = 0; isdigit(line[i]); i++)
-		mapp->dst = (mapp->dst * 10) + (line[i] - '0');
-	while (isdigit(line[++i]))
-		mapp->src = (mapp->src * 10) + (line[i] - '0');
-	while (isdigit(line[++i]))
-		mapp->len = (mapp->len * 10) + (line[i] - '0');
-}
-
-void
 applymaps(Seed seeds[], int nseeds, const struct map maps[], int nmaps)
 {
 	int i, j;
@@ -129,11 +102,5 @@ min(const Seed seeds[], int nseeds)
 	for (i = 0; i < nseeds; i++)
 		min = (seeds[i] < min) ? seeds[i] : min;
 	return min;
-}
-
-int
-isdigit(char c)
-{
-	return '0' <= c && c <= '9';
 }
 
