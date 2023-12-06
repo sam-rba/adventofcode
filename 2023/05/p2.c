@@ -11,6 +11,7 @@ struct seedrange {
 
 int readseedranges(struct seedrange seeds[], const char line[]);
 int applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nmaps);
+void splitrange(struct seedrange *dst, struct seedrange *src, int i);
 Seed min(const struct seedrange seeds[], int nseeds);
 
 int
@@ -101,12 +102,9 @@ applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nma
 			if (maps[j].src <= seeds[i].start
 					&& seeds[i].start < maps[j].src + maps[j].len) {
 				if (seeds[i].start + seeds[i].len >= maps[j].src + maps[j].len) {
-					/* split seed range */
 					if (++nseeds < SEEDRANGES) {
-						seeds[nseeds-1].start = maps[j].src + maps[j].len;
-						seeds[nseeds-1].len = (seeds[i].start + seeds[i].len)
-														- (maps[j].src + maps[j].len);
-						seeds[i].len -= seeds[nseeds-1].len;
+						splitrange(&seeds[nseeds-1], &seeds[i],
+								maps[j].src + maps[j].len);
 					} else {
 						printf("SEEDRANGES exceeded\n");
 						return -1;
@@ -118,6 +116,14 @@ applymaps(struct seedrange seeds[], int nseeds, const struct map maps[], int nma
 		}
 	}
 	return nseeds;
+}
+
+void
+splitrange(struct seedrange *dst, struct seedrange *src, int i)
+{
+	dst->start = i;
+	dst->len = src->start + src->len - i;
+	src->len -= dst->len;
 }
 
 Seed
