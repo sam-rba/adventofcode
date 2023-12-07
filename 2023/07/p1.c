@@ -9,8 +9,8 @@
 #define MAXHANDS 1024
 
 typedef enum {
-	TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
-	JOKER, JACK, QUEEN, KING, ACE
+	TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN,
+	JACK, QUEEN, KING, ACE
 } Card;
 
 typedef enum {
@@ -83,7 +83,7 @@ parsecard(char c) {
 		return c - '2';
 	switch (c) {
 	case 'T':
-		return JOKER;
+		return TEN;
 	case 'J':
 		return JACK;
 	case 'Q':
