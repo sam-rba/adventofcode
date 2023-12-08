@@ -9,6 +9,9 @@ parsehand(struct hand *h, const char line[])
 
 	for (i = 0; i < CARDS; i++)
 		h->cards[i] = parsecard(line[i]);
+
+	h->type = handtype(h);
+
 	h->bid = 0;
 	while (isdigit(line[++i]))
 		h->bid = (h->bid * 10) + (line[i] - '0');
@@ -25,17 +28,14 @@ int
 cmphand(const void *p1, const void *p2)
 {
 	struct hand *h1, *h2;
-	HandType t1, t2;
 	int i;
 
 	h1 = (struct hand *) p1;
 	h2 = (struct hand *) p2;
-	t1 = handtype(h1);
-	t2 = handtype(h2);
 
-	if (t1 < t2)
+	if (h1->type < h2->type)
 		return -1;
-	if (t1 > t2)
+	if (h1->type > h2->type)
 		return 1;
 
 	for (i = 0; i < CARDS; i++) {

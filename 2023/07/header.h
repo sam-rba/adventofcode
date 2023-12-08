@@ -18,6 +18,7 @@ typedef enum {
 
 struct hand {
 	Card cards[CARDS];
+	HandType type;
 	int bid;
 };
 
