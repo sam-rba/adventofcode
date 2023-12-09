@@ -11,14 +11,10 @@ func main() {
 		stdin     *bufio.Scanner
 		instrs    string
 		nodes     map[string]Node
-		node      Node
 		curnodes  []string
-		id        string
-		steps     uint64
 		intervals []uint64
 		i         int
 		err       error
-		ok        bool
 	)
 
 	// read instructions
@@ -29,6 +25,7 @@ func main() {
 	}
 	instrs = stdin.Text()
 
+	// read node definitions
 	stdin.Scan() // skip blank line
 	nodes, err = readnodes(stdin)
 	if err != nil {
@@ -36,50 +33,67 @@ func main() {
 		os.Exit(1)
 	}
 
-	// compile starting nodes
-	for id = range nodes {
-		if id[len(id)-1] == 'A' {
-			curnodes = append(curnodes, id)
+	// find interval that each path lands on a 'Z' node
+	curnodes = startingNodes(nodes)
+	intervals = make([]uint64, len(curnodes))
+	for i = range curnodes {
+		intervals[i], err = interval(curnodes[i], nodes, instrs)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
-	// find interval that each path lands on a 'Z' node
-	intervals = make([]uint64, len(curnodes))
-	for steps = 0; !nonezero(intervals); steps++ {
-		for i, id = range curnodes {
-			if id[len(id)-1] == 'Z' {
-				intervals[i] = steps
-			}
-			node, ok = nodes[id]
-			if !ok {
-				fmt.Println("unknown node:", id)
-				os.Exit(1)
-			}
-			switch instrs[int(steps)%len(instrs)] {
-			case 'L':
-				curnodes[i] = node.left
-			case 'R':
-				curnodes[i] = node.right
-			default:
-				fmt.Printf("unknown instruction: %c\n", instrs[int(steps)%len(instrs)])
-			}
-		}
-	}
 	// find the first time the intervals overlap
 	fmt.Println("Part 2:", lcm(intervals))
 }
 
-func nonezero(nums []uint64) bool {
-	var n uint64
+// nodes that end in 'A'
+func startingNodes(nodes map[string]Node) []string {
+	var (
+		id       string
+		starting []string
+	)
 
-	for _, n = range nums {
-		if n == 0 {
-			return false
+	for id = range nodes {
+		if id[len(id)-1] == 'A' {
+			starting = append(starting, id)
 		}
 	}
-	return true
+	return starting
 }
 
+// interval that a path lands on a 'Z' node
+func interval(startid string, nodes map[string]Node, instrs string) (uint64, error) {
+	var (
+		steps uint64
+		node  Node
+		id    string
+		ok    bool
+	)
+
+	id = startid
+	for steps = 0; ; steps++ {
+		if id[len(id)-1] == 'Z' {
+			return steps, nil
+		}
+		node, ok = nodes[id]
+		if !ok {
+			return 0, fmt.Errorf("unknown node:", id)
+		}
+		switch instrs[int(steps)%len(instrs)] {
+		case 'L':
+			id = node.left
+		case 'R':
+			id = node.right
+		default:
+			return 0, fmt.Errorf("unknown instruction: %c\n",
+				instrs[int(steps)%len(instrs)])
+		}
+	}
+}
+
+// least common multiple
 func lcm(nums []uint64) uint64 {
 	var i int
 
@@ -89,6 +103,7 @@ func lcm(nums []uint64) uint64 {
 	return nums[0]
 }
 
+// greatest common divisor
 func gcd(a, b uint64) uint64 {
 	var d int
 
