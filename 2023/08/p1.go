@@ -6,22 +6,13 @@ import (
 	"os"
 )
 
-type Node struct {
-	left  string
-	right string
-}
-
 func main() {
 	var (
-		stdin       *bufio.Scanner
-		line        string
-		instrs      string
-		parent      string
-		left, right string
-		nodes       map[string]Node
-		node        Node
-		ok          bool
-		steps       int
+		stdin  *bufio.Scanner
+		instrs string
+		nodes  map[string]Node
+		steps  int
+		err    error
 	)
 
 	// read instructions
@@ -32,42 +23,43 @@ func main() {
 	}
 	instrs = stdin.Text()
 
-	// read node definitions
-	nodes = make(map[string]Node)
 	stdin.Scan() // skip blank line
-	for stdin.Scan() {
-		line = stdin.Text()
-		if len(line) < 16 {
-			fmt.Println("line too short:\n", line)
-			os.Exit(1)
-		}
-		parent = line[:3]
-		left = line[7:10]
-		right = line[12:15]
-		if _, ok = nodes[parent]; ok {
-			fmt.Println("duplicate definition of", parent)
-			os.Exit(1)
-		}
-		nodes[parent] = Node{left, right}
+	nodes, err = readnodes(stdin)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	// follow instructions
-	parent = "AAA"
-	for steps = 0; parent != "ZZZ"; steps++ {
-		node, ok = nodes[parent]
+	steps, err = atoz(nodes, instrs)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("found ZZZ after %d steps\n", steps)
+	}
+}
+
+func atoz(nodes map[string]Node, instrs string) (int, error) {
+	var (
+		id    string
+		steps int
+		node  Node
+		ok    bool
+	)
+
+	id = "AAA"
+	for steps = 0; id != "ZZZ"; steps++ {
+		node, ok = nodes[id]
 		if !ok {
-			fmt.Println("unknown node:", parent)
-			os.Exit(1)
+			return -1, fmt.Errorf("unknown node:", id)
 		}
 		switch instrs[steps%len(instrs)] {
 		case 'L':
-			parent = node.left
+			id = node.left
 		case 'R':
-			parent = node.right
+			id = node.right
 		default:
-			fmt.Printf("unknown instruction: %c\n", instrs[steps%len(instrs)])
-			os.Exit(1)
+			return -1, fmt.Errorf("unknown instruction: %c", instrs[steps%len(instrs)])
 		}
 	}
-	fmt.Printf("found ZZZ after %d steps\n", steps)
+	return steps, nil
 }
