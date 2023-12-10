@@ -19,12 +19,13 @@ struct coords {
 };
 
 int readgrid(Tile grid[MAXH][MAXW], struct coords *size);
-void printgrid(const Tile grid[MAXH][MAXW], struct coords size);
 int cyclelen(const Tile grid[MAXH][MAXW], struct coords size);
 int startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size);
 Direction choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos);
+Direction move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir);
 int accessiblefrom(Tile tile, Direction dir);
 Direction outdir(Tile tile, Direction indir);
+void printgrid(const Tile grid[MAXH][MAXW], struct coords size);
 void printdir(Direction dir);
 
 int
@@ -70,22 +71,6 @@ readgrid(Tile grid[MAXH][MAXW], struct coords *size)
 	return 0;
 }
 
-void
-printgrid(const Tile grid[MAXH][MAXW], struct coords size)
-{
-	int i, j;
-
-	printf("width: %d, height: %d\n\n", size.x, size.y);
-	for (i = 0; i < size.y; i++) {
-		for (j = 0; j < size.x; j++) {
-			putchar(grid[i][j]);
-			putchar(' ');
-		}
-		putchar('\n');
-	}
-	putchar('\n');
-}
-
 /* length of a cycle starting from the starting tile */
 int
 cyclelen(const Tile grid[MAXH][MAXW], struct coords size)
@@ -103,45 +88,7 @@ cyclelen(const Tile grid[MAXH][MAXW], struct coords size)
 	dir = choosedir(grid, size, &pos);
 
 	for (len = 1; grid[pos.y][pos.x] != START; len++) {
-		switch (outdir(grid[pos.y][pos.x], dir)) {
-		case NORTH:
-			if (pos.y <= 0) {
-				printf("dead end going north at (y=%d, x=%d)\n", pos.y, pos.x);
-				return -1;
-			}
-			printf("(y=%d, x=%d), go north\n", pos.y, pos.x);
-			pos.y--;
-			dir = NORTH;
-			break;
-		case EAST:
-			if (pos.x >= size.x) {
-				printf("dead end going east at (y=%d, x=%d)\n", pos.y, pos.x);
-				return -1;
-			}
-			printf("(y=%d, x=%d), go east\n", pos.y, pos.x);
-			pos.x++;
-			dir = EAST;
-			break;
-		case SOUTH:
-			if (pos.y >= size.y) {
-				printf("dead end going south at (y=%d, x=%d)\n", pos.y, pos.x);
-				return -1;
-			}
-			printf("(y=%d, x=%d), go south\n", pos.y, pos.x);
-			pos.y++;
-			dir = SOUTH;
-			break;
-		case WEST:
-			if (pos.x <= 0) {
-				printf("dead end going west at (y=%d, x=%d)\n", pos.y, pos.x);
-				return -1;
-			}
-			printf("(y=%d, x=%d), go west\n", pos.y, pos.x);
-			pos.x--;
-			dir = WEST;
-			break;
-		default:
-			printf("invalid direction\n");
+		if ((dir = move(grid, size, &pos, dir)) < 0) {
 			return -1;
 		}
 	}
@@ -185,6 +132,48 @@ choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos)
 	}
 	printf("unreachable\n");
 	return -1;
+}
+
+Direction
+move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir)
+{
+	switch (outdir(grid[pos->y][pos->x], dir)) {
+	case NORTH:
+		if (pos->y <= 0) {
+			printf("dead end going north at (y=%d, x=%d)\n", pos->y, pos->x);
+			return -1;
+		}
+		printf("(y=%d, x=%d), go north\n", pos->y, pos->x);
+		pos->y--;
+		return NORTH;
+	case EAST:
+		if (pos->x >= size.x) {
+			printf("dead end going east at (y=%d, x=%d)\n", pos->y, pos->x);
+			return -1;
+		}
+		printf("(y=%d, x=%d), go east\n", pos->y, pos->x);
+		pos->x++;
+		return EAST;
+	case SOUTH:
+		if (pos->y >= size.y) {
+			printf("dead end going south at (y=%d, x=%d)\n", pos->y, pos->x);
+			return -1;
+		}
+		printf("(y=%d, x=%d), go south\n", pos->y, pos->x);
+		pos->y++;
+		return SOUTH;
+	case WEST:
+		if (pos->x <= 0) {
+			printf("dead end going west at (y=%d, x=%d)\n", pos->y, pos->x);
+			return -1;
+		}
+		printf("(y=%d, x=%d), go west\n", pos->y, pos->x);
+		pos->x--;
+		return WEST;
+	default:
+		printf("invalid direction\n");
+		return -1;
+	}
 }
 
 int
@@ -279,6 +268,22 @@ outdir(Tile tile, Direction indir)
 	printf("%c is not accessible from the ", tile);
 	printdir(indir);
 	return -1;
+}
+
+void
+printgrid(const Tile grid[MAXH][MAXW], struct coords size)
+{
+	int i, j;
+
+	printf("width: %d, height: %d\n\n", size.x, size.y);
+	for (i = 0; i < size.y; i++) {
+		for (j = 0; j < size.x; j++) {
+			putchar(grid[i][j]);
+			putchar(' ');
+		}
+		putchar('\n');
+	}
+	putchar('\n');
 }
 
 void
