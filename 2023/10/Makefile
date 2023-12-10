@@ -7,5 +7,5 @@ COMP = ${CC} -c ${CFLAGS} $<
 p1: p1.o
 	${LINK}
 
-%.o: %.c
+%.o: %.c header.h
 	${COMP}

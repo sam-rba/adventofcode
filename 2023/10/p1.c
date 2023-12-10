@@ -1,32 +1,6 @@
 #include <stdio.h>
 
-/* maximum grid dimensions */
-#define MAXW 192
-#define MAXH 192
-
-typedef enum {
-	NS = '|', EW = '-', NE = 'L', NW = 'J', SW = '7', SE = 'F',
-	GROUND = '.', START = 'S'
-} Tile;
-
-typedef enum {
-	NORTH, EAST, SOUTH, WEST
-} Direction;
-
-struct coords {
-	int x;
-	int y;
-};
-
-int readgrid(Tile grid[MAXH][MAXW], struct coords *size);
-int cyclelen(const Tile grid[MAXH][MAXW], struct coords size);
-int startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size);
-Direction choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos);
-Direction move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir);
-int accessiblefrom(Tile tile, Direction dir);
-Direction outdir(Tile tile, Direction indir);
-void printgrid(const Tile grid[MAXH][MAXW], struct coords size);
-void printdir(Direction dir);
+#include "header.h"
 
 int
 main()
@@ -39,7 +13,6 @@ main()
 		return 1;
 	}
 
-	printgrid(grid, size);
 	printf("loop length: %d\n", len = cyclelen(grid, size));
 	printf("part 1: %d\n", len/2);
 
@@ -83,7 +56,7 @@ cyclelen(const Tile grid[MAXH][MAXW], struct coords size)
 		printf("start position not found\n");
 		return -1;
 	}
-	printf("start: (%d, %d) (y, x)\n", pos.y, pos.x);
+	printf("start: (y=%d, x=%d)\n", pos.y, pos.x);
 
 	dir = choosedir(grid, size, &pos);
 
@@ -143,7 +116,6 @@ move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direct
 			printf("dead end going north at (y=%d, x=%d)\n", pos->y, pos->x);
 			return -1;
 		}
-		printf("(y=%d, x=%d), go north\n", pos->y, pos->x);
 		pos->y--;
 		return NORTH;
 	case EAST:
@@ -151,7 +123,6 @@ move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direct
 			printf("dead end going east at (y=%d, x=%d)\n", pos->y, pos->x);
 			return -1;
 		}
-		printf("(y=%d, x=%d), go east\n", pos->y, pos->x);
 		pos->x++;
 		return EAST;
 	case SOUTH:
@@ -159,7 +130,6 @@ move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direct
 			printf("dead end going south at (y=%d, x=%d)\n", pos->y, pos->x);
 			return -1;
 		}
-		printf("(y=%d, x=%d), go south\n", pos->y, pos->x);
 		pos->y++;
 		return SOUTH;
 	case WEST:
@@ -167,7 +137,6 @@ move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direct
 			printf("dead end going west at (y=%d, x=%d)\n", pos->y, pos->x);
 			return -1;
 		}
-		printf("(y=%d, x=%d), go west\n", pos->y, pos->x);
 		pos->x--;
 		return WEST;
 	default:
@@ -268,22 +237,6 @@ outdir(Tile tile, Direction indir)
 	printf("%c is not accessible from the ", tile);
 	printdir(indir);
 	return -1;
-}
-
-void
-printgrid(const Tile grid[MAXH][MAXW], struct coords size)
-{
-	int i, j;
-
-	printf("width: %d, height: %d\n\n", size.x, size.y);
-	for (i = 0; i < size.y; i++) {
-		for (j = 0; j < size.x; j++) {
-			putchar(grid[i][j]);
-			putchar(' ');
-		}
-		putchar('\n');
-	}
-	putchar('\n');
 }
 
 void
