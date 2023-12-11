@@ -15,29 +15,29 @@ typedef enum {
 	INVALID = -1, NORTH, EAST, SOUTH, WEST
 } Direction;
 
-struct coords {
+typedef struct coords {
 	int x;
 	int y;
-};
+} Coords;
 
-int readgrid(Tile grid[MAXH][MAXW], struct coords *size);
-int cyclelen(const Tile grid[MAXH][MAXW], struct coords size, struct coords visited[MAXPOINTS], int *nvisited);
-int enclosedtiles(const Tile grid[MAXH][MAXW], struct coords size, const struct coords visited[], int nvisited);
-int startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size);
-Direction choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos);
-Direction move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir);
+int readgrid(Tile grid[MAXH][MAXW], Coords *size);
+int cyclelen(const Tile grid[MAXH][MAXW], Coords size, Coords visited[MAXPOINTS], int *nvisited);
+int enclosedtiles(const Tile grid[MAXH][MAXW], Coords size, const Coords visited[], int nvisited);
+int startpos(Coords *pos, const Tile grid[MAXH][MAXW], Coords size);
+Direction choosedir(const Tile grid[MAXH][MAXW], Coords size, Coords *pos);
+Direction move(const Tile grid[MAXH][MAXW], Coords size, Coords *pos, Direction dir);
 int accessiblefrom(Tile tile, Direction dir);
 Direction outdir(Tile tile, Direction indir);
 int abs(int a);
 void printdir(Direction dir);
-void printgrid(const Tile grid[MAXH][MAXW], struct coords size);
+void printgrid(const Tile grid[MAXH][MAXW], Coords size);
 
 int
 main()
 {
 	Tile grid[MAXH][MAXW];
-	struct coords size; /* dimensions of grid */
-	struct coords visited[MAXPOINTS];
+	Coords size; /* dimensions of grid */
+	Coords visited[MAXPOINTS];
 	int nvisited;
 	int len;
 
@@ -54,7 +54,7 @@ main()
 }
 
 int
-readgrid(Tile grid[MAXH][MAXW], struct coords *size)
+readgrid(Tile grid[MAXH][MAXW], Coords *size)
 {
 	int i, c;
 
@@ -80,9 +80,9 @@ readgrid(Tile grid[MAXH][MAXW], struct coords *size)
 
 /* length of a cycle starting from the starting tile */
 int
-cyclelen(const Tile grid[MAXH][MAXW], struct coords size, struct coords visited[MAXPOINTS], int *nvisited)
+cyclelen(const Tile grid[MAXH][MAXW], Coords size, Coords visited[MAXPOINTS], int *nvisited)
 {
-	struct coords pos;
+	Coords pos;
 	Direction dir;
 	int len;
 
@@ -117,8 +117,8 @@ cyclelen(const Tile grid[MAXH][MAXW], struct coords size, struct coords visited[
 }
 
 int
-enclosedtiles(const Tile grid[MAXH][MAXW], struct coords size,
-		const struct coords visited[MAXPOINTS], int nvisited)
+enclosedtiles(const Tile grid[MAXH][MAXW], Coords size,
+		const Coords visited[MAXPOINTS], int nvisited)
 {
 	int i;
 	int area;
@@ -139,7 +139,7 @@ enclosedtiles(const Tile grid[MAXH][MAXW], struct coords size,
 }
 
 int
-startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size)
+startpos(Coords *pos, const Tile grid[MAXH][MAXW], Coords size)
 {
 	int x, y;
 	for (y = 0; y < size.y; y++) {
@@ -158,7 +158,7 @@ startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size)
 /* Arbitrarily choose one of two directions out of current tile.
    *pos is moved one step in that direction. */
 Direction
-choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos)
+choosedir(const Tile grid[MAXH][MAXW], Coords size, Coords *pos)
 {
 	if (pos->y > 0 && accessiblefrom(grid[pos->y-1][pos->x], SOUTH)) {
 		pos->y--;
@@ -178,7 +178,7 @@ choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos)
 }
 
 Direction
-move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir)
+move(const Tile grid[MAXH][MAXW], Coords size, Coords *pos, Direction dir)
 {
 	switch (outdir(grid[pos->y][pos->x], dir)) {
 	case NORTH:
@@ -336,9 +336,8 @@ printdir(Direction dir)
 	}
 }
 
-
 void
-printgrid(const Tile grid[MAXH][MAXW], struct coords size)
+printgrid(const Tile grid[MAXH][MAXW], Coords size)
 {
 	int y, x;
 
