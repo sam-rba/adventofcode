@@ -1,20 +1,54 @@
 #include <stdio.h>
 
-#include "header.h"
+/* maximum grid dimensions */
+#define MAXW 192
+#define MAXH 192
+
+#define MAXPOINTS 16384
+
+typedef enum {
+	NS = '|', EW = '-', NE = 'L', NW = 'J', SW = '7', SE = 'F',
+	GROUND = '.', START = 'S', VISITED = '@'
+} Tile;
+
+typedef enum {
+	INVALID = -1, NORTH, EAST, SOUTH, WEST
+} Direction;
+
+struct coords {
+	int x;
+	int y;
+};
+
+int readgrid(Tile grid[MAXH][MAXW], struct coords *size);
+int cyclelen(const Tile grid[MAXH][MAXW], struct coords size, struct coords visited[MAXPOINTS], int *nvisited);
+int enclosedtiles(const Tile grid[MAXH][MAXW], struct coords size, const struct coords visited[], int nvisited);
+int startpos(struct coords *pos, const Tile grid[MAXH][MAXW], struct coords size);
+Direction choosedir(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos);
+Direction move(const Tile grid[MAXH][MAXW], struct coords size, struct coords *pos, Direction dir);
+int accessiblefrom(Tile tile, Direction dir);
+Direction outdir(Tile tile, Direction indir);
+int abs(int a);
+void printdir(Direction dir);
+void printgrid(const Tile grid[MAXH][MAXW], struct coords size);
 
 int
 main()
 {
 	Tile grid[MAXH][MAXW];
 	struct coords size; /* dimensions of grid */
+	struct coords visited[MAXPOINTS];
+	int nvisited;
 	int len;
 
 	if (readgrid(grid, &size) != 0) {
 		return 1;
 	}
 
-	printf("loop length: %d\n", len = cyclelen(grid, size));
-	printf("part 1: %d\n", len/2);
+	printgrid(grid, size);
+	printf("cycle len: %d\n", len = cyclelen(grid, size, visited, &nvisited));
+	printf("1/2 cycle len (part 1): %d\n", len/2);
+	printf("enclosed tiles (part 2): %d\n", enclosedtiles(grid, size, visited, nvisited));
 
 	return 0;
 }
@@ -46,7 +80,7 @@ readgrid(Tile grid[MAXH][MAXW], struct coords *size)
 
 /* length of a cycle starting from the starting tile */
 int
-cyclelen(const Tile grid[MAXH][MAXW], struct coords size)
+cyclelen(const Tile grid[MAXH][MAXW], struct coords size, struct coords visited[MAXPOINTS], int *nvisited)
 {
 	struct coords pos;
 	Direction dir;
@@ -58,14 +92,50 @@ cyclelen(const Tile grid[MAXH][MAXW], struct coords size)
 	}
 	printf("start: (y=%d, x=%d)\n", pos.y, pos.x);
 
+	*nvisited = 0;
+	if (*nvisited < MAXPOINTS) {
+		visited[(*nvisited)++] = pos;
+	} else {
+		printf("MAXPOINTS exceeded\n");
+		return -1;
+	}
+
 	dir = choosedir(grid, size, &pos);
 
 	for (len = 1; grid[pos.y][pos.x] != START; len++) {
+		if (*nvisited < MAXPOINTS) {
+			visited[(*nvisited)++] = pos;
+		} else {
+			printf("MAXPOINTS exceeded\n");
+			return -1;
+		}
 		if ((dir = move(grid, size, &pos, dir)) < 0) {
 			return -1;
 		}
 	}
 	return len;
+}
+
+int
+enclosedtiles(const Tile grid[MAXH][MAXW], struct coords size,
+		const struct coords visited[MAXPOINTS], int nvisited)
+{
+	int i;
+	int area;
+	int interiorpoints;
+
+	/* shoelace formula */
+	area = 0;
+	for (i = 0; i < nvisited-1; i++) {
+		area += (visited[i].x * visited[i+1].y) - (visited[i+1].x * visited[i].y);
+	}
+	area += (visited[nvisited-1].x * visited[0].y) - (visited[0].x * visited[nvisited-1].y);
+	area = abs(area) / 2;
+	printf("area: %d\n", area);
+
+	/* Pick's theorem */
+	interiorpoints = area - (nvisited/2) + 1;
+	return interiorpoints;
 }
 
 int
@@ -239,6 +309,12 @@ outdir(Tile tile, Direction indir)
 	return -1;
 }
 
+int
+abs(int a)
+{
+	return (a < 0) ? -a : a;
+}
+
 void
 printdir(Direction dir)
 {
@@ -257,6 +333,20 @@ printdir(Direction dir)
 		break;
 	default:
 		printf("invalid direction: %d\n", dir);
+	}
+}
+
+
+void
+printgrid(const Tile grid[MAXH][MAXW], struct coords size)
+{
+	int y, x;
+
+	for (y = 0; y < size.y; y++) {
+		for (x = 0; x < size.x; x++) {
+			putchar(grid[y][x]);
+		}
+		putchar('\n');
 	}
 }
 
