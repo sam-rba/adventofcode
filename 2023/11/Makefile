@@ -1,3 +1,3 @@
-p1: p1.go
+main: main.go
 	go build $^
 	gofmt -l -s -w $^

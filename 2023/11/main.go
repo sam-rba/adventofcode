@@ -6,7 +6,12 @@ import (
 	"os"
 )
 
-const GALAXY = '#'
+const (
+	GALAXY = '#'
+	// growth factors for each part
+	FACTOR1 = 2
+	FACTOR2 = 1_000_000
+)
 
 type CoordMap map[uint]map[uint]bool
 
@@ -26,17 +31,19 @@ func main() {
 		pairs                []CoordPair
 		pair                 CoordPair
 		emptyRows, emptyCols map[uint]bool
-		dist                 uint
+		dist1, dist2         uint
 	)
 
 	galaxies = readInput()
 	pairs = toPairs(galaxies)
 	emptyRows, emptyCols = empty(galaxies)
-	dist = 0
+
+	dist1, dist2 = 0, 0
 	for _, pair = range pairs {
-		dist += distance(pair.a, pair.b, emptyRows, emptyCols)
+		dist1 += distance(pair.a, pair.b, emptyRows, emptyCols, FACTOR1)
+		dist2 += distance(pair.a, pair.b, emptyRows, emptyCols, FACTOR2)
 	}
-	fmt.Printf("part 1: %d\n", dist)
+	fmt.Printf("part 1: %d\npart2: %d\n", dist1, dist2)
 }
 
 func readInput() (galaxies CoordMap) {
@@ -107,6 +114,26 @@ func empty(galaxies CoordMap) (rows map[uint]bool, cols map[uint]bool) {
 	return rows, cols
 }
 
+func distance(a, b Coords, emptyRows, emptyCols map[uint]bool, factor uint) uint {
+	var (
+		x, y uint
+	)
+
+	if a.x > b.x {
+		x = a.x - b.x + ((factor - 1) * countBetween(emptyCols, b.x, a.x))
+	} else if b.x >= a.x {
+		x = b.x - a.x + ((factor - 1) * countBetween(emptyCols, a.x, b.x))
+	}
+
+	if a.y > b.y {
+		y = a.y - b.y + ((factor - 1) * countBetween(emptyRows, b.y, a.y))
+	} else if b.y >= a.y {
+		y = b.y - a.y + ((factor - 1) * countBetween(emptyRows, a.y, b.y))
+	}
+
+	return x + y
+}
+
 func max[T any](set map[uint]T) uint {
 	var max, n uint
 
@@ -117,26 +144,6 @@ func max[T any](set map[uint]T) uint {
 		}
 	}
 	return max
-}
-
-func distance(a, b Coords, emptyRows, emptyCols map[uint]bool) uint {
-	var (
-		x, y uint
-	)
-
-	if a.x > b.x {
-		x = a.x - b.x + countBetween(emptyCols, b.x, a.x)
-	} else if b.x >= a.x {
-		x = b.x - a.x + countBetween(emptyCols, a.x, b.x)
-	}
-
-	if a.y > b.y {
-		y = a.y - b.y + countBetween(emptyRows, b.y, a.y)
-	} else if b.y >= a.y {
-		y = b.y - a.y + countBetween(emptyRows, a.y, b.y)
-	}
-
-	return x + y
 }
 
 func countBetween[T any](set map[uint]T, lo, hi uint) uint {
