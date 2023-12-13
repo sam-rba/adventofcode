@@ -15,33 +15,30 @@ const (
 
 type CoordMap map[uint]map[uint]bool
 
-type Coords struct {
+type Coord struct {
 	x uint
 	y uint
 }
 
-type CoordPair struct {
-	a Coords
-	b Coords
-}
-
 func main() {
 	var (
-		galaxies             CoordMap
-		pairs                []CoordPair
-		pair                 CoordPair
 		emptyRows, emptyCols map[uint]bool
+		galaxyMap            CoordMap
+		galaxyArr            []Coord
 		dist1, dist2         uint
+		i, j                 int
 	)
 
-	galaxies = readInput()
-	pairs = toPairs(galaxies)
-	emptyRows, emptyCols = empty(galaxies)
+	galaxyMap = readInput()
+	emptyRows, emptyCols = empty(galaxyMap)
+	galaxyArr = toArr(galaxyMap)
 
 	dist1, dist2 = 0, 0
-	for _, pair = range pairs {
-		dist1 += distance(pair.a, pair.b, emptyRows, emptyCols, FACTOR1)
-		dist2 += distance(pair.a, pair.b, emptyRows, emptyCols, FACTOR2)
+	for i = len(galaxyArr) - 1; i >= 0; i-- {
+		for j = i - 1; j >= 0; j-- {
+			dist1 += distance(galaxyArr[i], galaxyArr[j], emptyRows, emptyCols, FACTOR1)
+			dist2 += distance(galaxyArr[i], galaxyArr[j], emptyRows, emptyCols, FACTOR2)
+		}
 	}
 	fmt.Printf("part 1: %d\npart2: %d\n", dist1, dist2)
 }
@@ -72,25 +69,6 @@ func readInput() (galaxies CoordMap) {
 	return galaxies
 }
 
-func toPairs(galaxies CoordMap) (pairs []CoordPair) {
-	var (
-		coords  []Coords
-		i, j, p int
-	)
-
-	coords = toArr(galaxies)
-	pairs = make([]CoordPair, chooseTwo(len(coords)))
-
-	p = 0
-	for i = len(coords) - 1; i >= 0; i-- {
-		for j = i - 1; j >= 0; j-- {
-			pairs[p] = CoordPair{coords[i], coords[j]}
-			p++
-		}
-	}
-	return pairs
-}
-
 func empty(galaxies CoordMap) (rows map[uint]bool, cols map[uint]bool) {
 	var (
 		i  uint
@@ -114,7 +92,7 @@ func empty(galaxies CoordMap) (rows map[uint]bool, cols map[uint]bool) {
 	return rows, cols
 }
 
-func distance(a, b Coords, emptyRows, emptyCols map[uint]bool, factor uint) uint {
+func distance(a, b Coord, emptyRows, emptyCols map[uint]bool, factor uint) uint {
 	var (
 		x, y uint
 	)
@@ -178,22 +156,17 @@ func transpose(galaxies CoordMap) CoordMap {
 	return transposed
 }
 
-func toArr(galaxies CoordMap) []Coords {
+func toArr(galaxies CoordMap) []Coord {
 	var (
-		coords []Coords
+		coords []Coord
 		x, y   uint
 		row    map[uint]bool
 	)
 
 	for y, row = range galaxies {
 		for x = range row {
-			coords = append(coords, Coords{x, y})
+			coords = append(coords, Coord{x, y})
 		}
 	}
 	return coords
-}
-
-// C(n, 2)
-func chooseTwo(n int) int {
-	return (n*n - n) / 2
 }
