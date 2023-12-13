@@ -36,8 +36,11 @@ func main() {
 	dist1, dist2 = 0, 0
 	for i = len(galaxyArr) - 1; i >= 0; i-- {
 		for j = i - 1; j >= 0; j-- {
-			dist1 += distance(galaxyArr[i], galaxyArr[j], emptyRows, emptyCols, FACTOR1)
-			dist2 += distance(galaxyArr[i], galaxyArr[j], emptyRows, emptyCols, FACTOR2)
+			dist1 += distance(galaxyArr[i].x, galaxyArr[j].x, emptyCols, FACTOR1)
+			dist1 += distance(galaxyArr[i].y, galaxyArr[j].y, emptyRows, FACTOR1)
+
+			dist2 += distance(galaxyArr[i].x, galaxyArr[j].x, emptyCols, FACTOR2)
+			dist2 += distance(galaxyArr[i].y, galaxyArr[j].y, emptyRows, FACTOR2)
 		}
 	}
 	fmt.Printf("part 1: %d\npart2: %d\n", dist1, dist2)
@@ -92,24 +95,11 @@ func empty(galaxies CoordMap) (rows map[uint]bool, cols map[uint]bool) {
 	return rows, cols
 }
 
-func distance(a, b Coord, emptyRows, emptyCols map[uint]bool, factor uint) uint {
-	var (
-		x, y uint
-	)
-
-	if a.x > b.x {
-		x = a.x - b.x + ((factor - 1) * countBetween(emptyCols, b.x, a.x))
-	} else if b.x >= a.x {
-		x = b.x - a.x + ((factor - 1) * countBetween(emptyCols, a.x, b.x))
+func distance(a, b uint, empty map[uint]bool, growthFactor uint) uint {
+	if a > b {
+		return a - b + ((growthFactor - 1) * countBetween(empty, b, a))
 	}
-
-	if a.y > b.y {
-		y = a.y - b.y + ((factor - 1) * countBetween(emptyRows, b.y, a.y))
-	} else if b.y >= a.y {
-		y = b.y - a.y + ((factor - 1) * countBetween(emptyRows, a.y, b.y))
-	}
-
-	return x + y
+	return b - a + ((growthFactor - 1) * countBetween(empty, a, b))
 }
 
 func max[T any](set map[uint]T) uint {
