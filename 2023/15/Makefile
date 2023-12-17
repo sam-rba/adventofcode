@@ -2,10 +2,17 @@ include ../config.mk
 
 CC = tcc
 LINK = ${CC} -o $@ $^
-COMP = ${CC} -c ${CFLAGS} $<
 
-p1: p1.o
+
+all: p1 p2
+
+p1: p1.o share.o
 	${LINK}
 
-%.o: %.c
-	${COMP}
+p2: p2.o share.o
+	${LINK}
+
+%.o: %.c header.h
+	${CC} -c ${CFLAGS} $<
+
+.PHONY: all

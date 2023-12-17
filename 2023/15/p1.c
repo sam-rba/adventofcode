@@ -1,9 +1,10 @@
 #include <stdio.h>
 
+#include "header.h"
+
 #define MAXSTEP 16
 
 int readstep(char step[]);
-unsigned char hash(const unsigned char step[]);
 
 int
 main()
@@ -37,19 +38,5 @@ readstep(char step[])
 	}
 	step[i] = '\0';
 	return i;
-}
-
-unsigned char
-hash(const unsigned char step[])
-{
-	unsigned char v;
-
-	v = 0;
-	for (; *step != '\0'; step++) {
-		v += *step;
-		v *= 17;
-		v %= 256;
-	}
-	return v;
 }
 
