@@ -1,257 +1,206 @@
 #include <stdio.h>
 
+#include "header.h"
+
 #define WIDTH 128
 #define HEIGHT 128
-#define MAXSTACK 128
+#define NDIRECTIONS 4
 
-typedef enum {
-	RIGHT, LEFT, UP, DOWN
-} Direction;
-
-struct tile {
+struct Tile {
 	char mirror;
 	short energized;
-	short visited[4];
+	short visited[NDIRECTIONS];
 };
 
-struct coord {
-	int x;
-	int y;
-};
-
-struct state {
-	struct coord pos;
-	Direction dir;
-};
-
-struct stack {
-	struct state elems[MAXSTACK];
-	int len;
-};
-
-void readinput(struct tile grid[HEIGHT][WIDTH], struct coord *size);
+void readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size);
 
 int
 main()
 {
-	struct tile grid[HEIGHT][WIDTH];
-	struct coord size;
-	struct stack stk;
-	struct coord pos;
-	Direction dir;
+	struct Tile grid[HEIGHT][WIDTH];
+	struct Coord size;
+
+	struct Stack stack;
+	struct State state;
+	struct Tile *tile;
+
 	unsigned int energized;
 
 	readinput(grid, &size);
-	stk.elems[0].pos.x = stk.elems[0].pos.y = 0;
-	stk.elems[0].dir = RIGHT;
-	stk.len = 1;
-	while (stk.len > 0) {
-		pos = stk.elems[stk.len-1].pos;
-		dir = stk.elems[stk.len-1].dir;
-		if (grid[pos.y][pos.x].visited[dir]) {
-			stk.len--;
+	state.pos.x = state.pos.y = 0;
+	state.dir = RIGHT;
+	if (push(&stack, state) != 0)
+		return 1;
+	while (pop(&stack, &state) == 0) {
+		tile = &grid[state.pos.y][state.pos.x];
+		if (tile->visited[state.dir]) {
 			continue;
 		}
-		grid[pos.y][pos.x].energized = 1;
-		grid[pos.y][pos.x].visited[dir] = 1;
+		tile->energized = 1;
+		tile->visited[state.dir] = 1;
 
-		switch (grid[pos.y][pos.x].mirror) {
+		switch (tile->mirror) {
 		case '.':
-			switch (dir) {
+			switch (state.dir) {
 			case RIGHT:
-				if (pos.x < size.x-1)
-					stk.elems[stk.len-1].pos.x++;
-				else
-					stk.len--;
+				if (++state.pos.x < size.x && push(&stack, state) != 0)
+					return 1;
 				break;
 			case LEFT:
-				if (pos.x > 0)
-					stk.elems[stk.len-1].pos.x--;
-				else
-					stk.len--;
+				if (--state.pos.x >= 0 && push(&stack, state) != 0)
+					return 1;
 				break;
 			case UP:
-				if (pos.y > 0)
-					stk.elems[stk.len-1].pos.y--;
-				else
-					stk.len--;
+				if (--state.pos.y >= 0 && push(&stack, state) != 0)
+					return 1;
 				break;
 			case DOWN:
-				if (pos.y < size.y-1)
-					stk.elems[stk.len-1].pos.y++;
-				else
-					stk.len--;
+				if (++state.pos.y < size.y && push(&stack, state) != 0)
+					return 1;
 				break;
 			default:
-				printf("invalid direction: %d\n", dir);
+				printf("invalid direction: %d\n", state.dir);
 				return 1;
 			}
 			break;
 		case '|':
-			switch (dir) {
+			switch (state.dir) {
 			case RIGHT: /* FALLTHROUGH */
 			case LEFT:
-				if (pos.y > 0) {
-					stk.elems[stk.len-1].pos.y--;
-					stk.elems[stk.len-1].dir = UP;
-				} else {
-					stk.len--;
-				}
-				if (pos.y < size.y-1) {
-					if (stk.len < MAXSTACK) {
-						stk.len++;
-						stk.elems[stk.len-1].pos.x = pos.x;
-						stk.elems[stk.len-1].pos.y = pos.y+1;
-						stk.elems[stk.len-1].dir = DOWN;
-					} else {
-						printf("MAXSTACK exceeded\n");
+				if (--state.pos.y >= 0) {
+					state.dir = UP;
+					if (push(&stack, state) != 0)
 						return 1;
-					}
+				}
+				state.pos.y++;
+				if (++state.pos.y < size.y) {
+					state.dir = DOWN;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case UP:
-				if (pos.y > 0)
-					stk.elems[stk.len-1].pos.y--;
-				else
-					stk.len--;
+				if (--state.pos.y >= 0 && push(&stack, state) != 0)
+					return 1;
 				break;
 			case DOWN:
-				if (pos.y < size.y-1)
-					stk.elems[stk.len-1].pos.y++;
-				else
-					stk.len--;
+				if (++state.pos.y < size.y && push(&stack, state) != 0)
+					return 1;
 				break;
 			default:
-				printf("invalid direction: %d\n", dir);
+				printf("invalid direction: %d\n", state.dir);
 				return 1;
 			}
 			break;
 		case '-':
-			switch (dir) {
+			switch (state.dir) {
 			case UP: /* FALLTHROUGH */
 			case DOWN:
-				if (pos.x > 0) {
-					stk.elems[stk.len-1].pos.x--;
-					stk.elems[stk.len-1].dir = LEFT;
-				} else {
-					stk.len--;
-				}
-				if (pos.x < size.x-1) {
-					if (stk.len < MAXSTACK) {
-						stk.len++;
-						stk.elems[stk.len-1].pos.x = pos.x+1;
-						stk.elems[stk.len-1].pos.y = pos.y;
-						stk.elems[stk.len-1].dir = RIGHT;
-					} else {
-						printf("MAXSTACK exceeded\n");
+				if (--state.pos.x >= 0) {
+					state.dir = LEFT;
+					if (push(&stack, state) != 0)
 						return 1;
-					}
+				}
+				state.pos.x++;
+				if (++state.pos.x < size.x) {
+					state.dir = RIGHT;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case LEFT:
-				if (pos.x > 0)
-					stk.elems[stk.len-1].pos.x--;
-				else
-					stk.len--;
+				if (--state.pos.x >= 0 && push(&stack, state) != 0)
+					return 1;
 				break;
 			case RIGHT:
-				if (pos.x < size.x-1)
-					stk.elems[stk.len-1].pos.x++;
-				else
-					stk.len--;
+				if (++state.pos.x < size.x && push(&stack, state) != 0)
+					return 1;
 				break;
 			default:
-				printf("invalid direction: %d\n", dir);
+				printf("invalid direction: %d\n", state.dir);
 				return 1;
 			}
 			break;
 		case '/':
-			switch (dir) {
+			switch (state.dir) {
 			case UP:
-				if (pos.x < size.x-1) {
-					stk.elems[stk.len-1].pos.x++;
-					stk.elems[stk.len-1].dir = RIGHT;
-				} else {
-					stk.len--;
+				if (++state.pos.x < size.x) {
+					state.dir = RIGHT;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case DOWN:
-				if (pos.x > 0) {
-					stk.elems[stk.len-1].pos.x--;
-					stk.elems[stk.len-1].dir = LEFT;
-				} else {
-					stk.len--;
+				if (--state.pos.x >= 0) {
+					state.dir = LEFT;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case LEFT:
-				if (pos.y < size.y-1) {
-					stk.elems[stk.len-1].pos.y++;
-					stk.elems[stk.len-1].dir = DOWN;
-				} else {
-					stk.len--;
+				if (++state.pos.y < size.y) {
+					state.dir = DOWN;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case RIGHT:
-				if (pos.y > 0) {
-					stk.elems[stk.len-1].pos.y--;
-					stk.elems[stk.len-1].dir = UP;
-				} else {
-					stk.len--;
+				if (--state.pos.y >= 0) {
+					state.dir = UP;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			default:
-				printf("invalid direction: %d\n", dir);
+				printf("invalid direction: %d\n", state.dir);
 				return 1;
 			}
 			break;
 		case '\\':
-			switch (dir) {
+			switch (state.dir) {
 			case UP:
-				if (pos.x > 0) {
-					stk.elems[stk.len-1].pos.x--;
-					stk.elems[stk.len-1].dir = LEFT;
-				} else {
-					stk.len--;
+				if (--state.pos.x >= 0) {
+					state.dir = LEFT;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case DOWN:
-				if (pos.x < size.x-1) {
-					stk.elems[stk.len-1].pos.x++;
-					stk.elems[stk.len-1].dir = RIGHT;
-				} else {
-					stk.len--;
+				if (++state.pos.x < size.x) {
+					state.dir = RIGHT;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case LEFT:
-				if (pos.y > 0) {
-					stk.elems[stk.len-1].pos.y--;
-					stk.elems[stk.len-1].dir = UP;
-				} else {
-					stk.len--;
+				if (--state.pos.y >= 0) {
+					state.dir = UP;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			case RIGHT:
-				if (pos.y < size.y-1) {
-					stk.elems[stk.len-1].pos.y++;
-					stk.elems[stk.len-1].dir = DOWN;
-				} else {
-					stk.len--;
+				if (++state.pos.y < size.y) {
+					state.dir = DOWN;
+					if (push(&stack, state) != 0)
+						return 1;
 				}
 				break;
 			default:
-				printf("invalid direction: %d\n", dir);
+				printf("invalid direction: %d\n", state.dir);
 				return 1;
 			}
 			break;
 		default:
-			printf("invalid tile: %c\n", grid[pos.y][pos.x].mirror);
+			printf("invalid tile: %c\n", grid[state.pos.y][state.pos.x].mirror);
+			return 1;
 		}
 	}
 
 	energized = 0;
-	for (pos.y = 0; pos.y < size.y; pos.y++)
-		for (pos.x = 0; pos.x < size.x; pos.x++)
-			if (grid[pos.y][pos.x].energized)
+	for (state.pos.y = 0; state.pos.y < size.y; state.pos.y++)
+		for (state.pos.x = 0; state.pos.x < size.x; state.pos.x++)
+			if (grid[state.pos.y][state.pos.x].energized)
 				energized++;
 	printf("part 1: %u\n", energized);
 
@@ -259,7 +208,7 @@ main()
 }
 
 void
-readinput(struct tile grid[HEIGHT][WIDTH], struct coord *size)
+readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size)
 {
 	int j, c;
 
