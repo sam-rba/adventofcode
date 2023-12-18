@@ -13,6 +13,8 @@ struct Tile {
 };
 
 void readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size);
+int move(struct Stack *stack, struct State state, char mirror, struct Coord size);
+unsigned int energizedTiles(const struct Tile grid[HEIGHT][WIDTH], struct Coord size);
 
 int
 main()
@@ -23,8 +25,6 @@ main()
 	struct Stack stack;
 	struct State state;
 	struct Tile *tile;
-
-	unsigned int energized;
 
 	readinput(grid, &size);
 	state.pos.x = state.pos.y = 0;
@@ -38,172 +38,10 @@ main()
 		}
 		tile->energized = 1;
 		tile->visited[state.dir] = 1;
-
-		switch (tile->mirror) {
-		case '.':
-			switch (state.dir) {
-			case RIGHT:
-				if (++state.pos.x < size.x && push(&stack, state) != 0)
-					return 1;
-				break;
-			case LEFT:
-				if (--state.pos.x >= 0 && push(&stack, state) != 0)
-					return 1;
-				break;
-			case UP:
-				if (--state.pos.y >= 0 && push(&stack, state) != 0)
-					return 1;
-				break;
-			case DOWN:
-				if (++state.pos.y < size.y && push(&stack, state) != 0)
-					return 1;
-				break;
-			default:
-				printf("invalid direction: %d\n", state.dir);
-				return 1;
-			}
-			break;
-		case '|':
-			switch (state.dir) {
-			case RIGHT: /* FALLTHROUGH */
-			case LEFT:
-				if (--state.pos.y >= 0) {
-					state.dir = UP;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				state.pos.y++;
-				if (++state.pos.y < size.y) {
-					state.dir = DOWN;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case UP:
-				if (--state.pos.y >= 0 && push(&stack, state) != 0)
-					return 1;
-				break;
-			case DOWN:
-				if (++state.pos.y < size.y && push(&stack, state) != 0)
-					return 1;
-				break;
-			default:
-				printf("invalid direction: %d\n", state.dir);
-				return 1;
-			}
-			break;
-		case '-':
-			switch (state.dir) {
-			case UP: /* FALLTHROUGH */
-			case DOWN:
-				if (--state.pos.x >= 0) {
-					state.dir = LEFT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				state.pos.x++;
-				if (++state.pos.x < size.x) {
-					state.dir = RIGHT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case LEFT:
-				if (--state.pos.x >= 0 && push(&stack, state) != 0)
-					return 1;
-				break;
-			case RIGHT:
-				if (++state.pos.x < size.x && push(&stack, state) != 0)
-					return 1;
-				break;
-			default:
-				printf("invalid direction: %d\n", state.dir);
-				return 1;
-			}
-			break;
-		case '/':
-			switch (state.dir) {
-			case UP:
-				if (++state.pos.x < size.x) {
-					state.dir = RIGHT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case DOWN:
-				if (--state.pos.x >= 0) {
-					state.dir = LEFT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case LEFT:
-				if (++state.pos.y < size.y) {
-					state.dir = DOWN;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case RIGHT:
-				if (--state.pos.y >= 0) {
-					state.dir = UP;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			default:
-				printf("invalid direction: %d\n", state.dir);
-				return 1;
-			}
-			break;
-		case '\\':
-			switch (state.dir) {
-			case UP:
-				if (--state.pos.x >= 0) {
-					state.dir = LEFT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case DOWN:
-				if (++state.pos.x < size.x) {
-					state.dir = RIGHT;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case LEFT:
-				if (--state.pos.y >= 0) {
-					state.dir = UP;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			case RIGHT:
-				if (++state.pos.y < size.y) {
-					state.dir = DOWN;
-					if (push(&stack, state) != 0)
-						return 1;
-				}
-				break;
-			default:
-				printf("invalid direction: %d\n", state.dir);
-				return 1;
-			}
-			break;
-		default:
-			printf("invalid tile: %c\n", grid[state.pos.y][state.pos.x].mirror);
+		if (move(&stack, state, tile->mirror, size) != 0)
 			return 1;
-		}
 	}
-
-	energized = 0;
-	for (state.pos.y = 0; state.pos.y < size.y; state.pos.y++)
-		for (state.pos.x = 0; state.pos.x < size.x; state.pos.x++)
-			if (grid[state.pos.y][state.pos.x].energized)
-				energized++;
-	printf("part 1: %u\n", energized);
-
+	printf("part 1: %u\n", energizedTiles(grid, size));
 	return 0;
 }
 
@@ -234,5 +72,119 @@ readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size)
 			return;
 		}
 	}
+}
+
+int
+move(struct Stack *stack, struct State state, char mirror, struct Coord size)
+{
+	switch (mirror) {
+	case '.':
+		switch (state.dir) {
+		case RIGHT:
+			return (++state.pos.x < size.x) ? push(stack, state) : 0;
+		case LEFT:
+			return (--state.pos.x >= 0) ? push(stack, state) : 0;
+		case UP:
+			return (--state.pos.y >= 0) ? push(stack, state) : 0;
+		case DOWN:
+			return (++state.pos.y < size.y) ? push(stack, state) : 0;
+		default:
+			printf("invalid direction: %d\n", state.dir);
+			return 1;
+		}
+	case '|':
+		switch (state.dir) {
+		case RIGHT: /* FALLTHROUGH */
+		case LEFT:
+			if (--state.pos.y >= 0) {
+				state.dir = UP;
+				if (push(stack, state) != 0)
+					return 1;
+			}
+			state.pos.y += 2;
+			state.dir = DOWN;
+			return (state.pos.y < size.y) ? push(stack, state) : 0;
+		case UP:
+			return (--state.pos.y >= 0) ? push(stack, state) : 0;
+		case DOWN:
+			return (++state.pos.y < size.y) ? push(stack, state) : 0;
+		default:
+			printf("invalid direction: %d\n", state.dir);
+			return 1;
+		}
+	case '-':
+		switch (state.dir) {
+		case UP: /* FALLTHROUGH */
+		case DOWN:
+			if (--state.pos.x >= 0) {
+				state.dir = LEFT;
+				if (push(stack, state) != 0)
+					return 1;
+			}
+			state.pos.x += 2;
+			state.dir = RIGHT;
+			return (state.pos.x < size.x) ? push(stack, state) : 0;
+		case LEFT:
+			return (--state.pos.x >= 0) ? push(stack, state) : 0;
+		case RIGHT:
+			return (++state.pos.x < size.x) ? push(stack, state) : 0;
+		default:
+			printf("invalid direction: %d\n", state.dir);
+			return 1;
+		}
+	case '/':
+		switch (state.dir) {
+		case UP:
+			state.dir = RIGHT;
+			return (++state.pos.x < size.x) ? push(stack, state) : 0;
+		case DOWN:
+			state.dir = LEFT;
+			return (--state.pos.x >= 0) ? push(stack, state) : 0;
+		case LEFT:
+			state.dir = DOWN;
+			return (++state.pos.y < size.y) ? push(stack, state) : 0;
+		case RIGHT:
+			state.dir = UP;
+			return (--state.pos.y >= 0) ? push(stack, state) : 0;
+		default:
+			printf("invalid direction: %d\n", state.dir);
+			return 1;
+		}
+	case '\\':
+		switch (state.dir) {
+		case UP:
+			state.dir = LEFT;
+			return (--state.pos.x >= 0) ? push(stack, state) : 0;
+		case DOWN:
+			state.dir = RIGHT;
+			return (++state.pos.x < size.x) ? push(stack, state) : 0;
+		case LEFT:
+			state.dir = UP;
+			return (--state.pos.y >= 0) ? push(stack, state) : 0;
+		case RIGHT:
+			state.dir = DOWN;
+			return (++state.pos.y < size.y) ? push(stack, state) : 0;
+		default:
+			printf("invalid direction: %d\n", state.dir);
+			return 1;
+		}
+	default:
+		printf("invalid tile: %c\n", mirror);
+		return 1;
+	}
+}
+
+unsigned int
+energizedTiles(const struct Tile grid[HEIGHT][WIDTH], struct Coord size)
+{
+	unsigned int energized;
+	unsigned int x, y;
+
+	energized = 0;
+	for (y = 0; y < size.y; y++)
+		for (x = 0; x < size.x; x++)
+			if (grid[y][x].energized)
+				energized++;
+	return energized;
 }
 
