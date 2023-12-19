@@ -5,27 +5,27 @@
 int move(struct Stack *stack, struct State state, char mirror, struct Coord size);
 
 void
-readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size)
+readinput(struct Grid *grid)
 {
 	int j, c;
 
-	size->x = size->y = j = 0;
+	grid->size.x = grid->size.y = j = 0;
 	while ((c = getchar()) != EOF) {
 		if (c == '\n') {
-			if (size->y >= HEIGHT) {
+			if (grid->size.y >= HEIGHT) {
 				printf("HEIGHT exceeded\n");
 				return;
 			}
-			size->y++;
-			size->x = j;
+			grid->size.y++;
+			grid->size.x = j;
 			j = 0;
 		} else if (j < WIDTH) {
-			grid[size->y][j].mirror = c;
-			grid[size->y][j].energized = 0;
-			grid[size->y][j].visited[RIGHT] = 0;
-			grid[size->y][j].visited[LEFT] = 0;
-			grid[size->y][j].visited[UP] = 0;
-			grid[size->y][j++].visited[DOWN] = 0;
+			grid->tiles[grid->size.y][j].mirror = c;
+			grid->tiles[grid->size.y][j].energized = 0;
+			grid->tiles[grid->size.y][j].visited[RIGHT] = 0;
+			grid->tiles[grid->size.y][j].visited[LEFT] = 0;
+			grid->tiles[grid->size.y][j].visited[UP] = 0;
+			grid->tiles[grid->size.y][j++].visited[DOWN] = 0;
 		} else {
 			printf("WIDTH exceeded\n");
 			return;
@@ -34,7 +34,7 @@ readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size)
 }
 
 int
-run(struct Tile grid[HEIGHT][WIDTH], struct Coord size, struct State state)
+run(struct Grid *grid, struct State state)
 {
 	struct Tile *tile;
 	static struct Stack stack;
@@ -43,28 +43,28 @@ run(struct Tile grid[HEIGHT][WIDTH], struct Coord size, struct State state)
 	if (push(&stack, state) != 0)
 		return 1;
 	while (pop(&stack, &state) == 0) {
-		tile = &grid[state.pos.y][state.pos.x];
+		tile = &grid->tiles[state.pos.y][state.pos.x];
 		if (tile->visited[state.dir]) {
 			continue;
 		}
 		tile->energized = 1;
 		tile->visited[state.dir] = 1;
-		if (move(&stack, state, tile->mirror, size) != 0)
+		if (move(&stack, state, tile->mirror, grid->size) != 0)
 			return 1;
 	}
 	return 0;
 }
 
 unsigned int
-energizedTiles(const struct Tile grid[HEIGHT][WIDTH], struct Coord size)
+energizedTiles(const struct Grid *grid)
 {
 	unsigned int energized;
 	unsigned int x, y;
 
 	energized = 0;
-	for (y = 0; y < size.y; y++)
-		for (x = 0; x < size.x; x++)
-			if (grid[y][x].energized)
+	for (y = 0; y < grid->size.y; y++)
+		for (x = 0; x < grid->size.x; x++)
+			if (grid->tiles[y][x].energized)
 				energized++;
 	return energized;
 }

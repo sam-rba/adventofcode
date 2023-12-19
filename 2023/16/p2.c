@@ -2,49 +2,48 @@
 
 #include "header.h"
 
-void reset(struct Tile grid[HEIGHT][WIDTH], struct Coord size);
+void reset(struct Grid *grid);
 unsigned int max(unsigned int a, unsigned int b);
 
 int
 main()
 {
-	static struct Tile grid[HEIGHT][WIDTH];
-	struct Coord size;
+	static struct Grid grid;
 	struct State state;
 	int i, j;
 	unsigned int maxenergized;
 
-	readinput(grid, &size);
+	readinput(&grid);
 	maxenergized = 0;
 	/* sides */
-	for (i = 0; i < size.y; i++) {
+	for (i = 0; i < grid.size.y; i++) {
 		/* left edge */
 		state = (struct State) { .pos={ .x=0, .y=i }, .dir=RIGHT };
-		if (run(grid, size, state) != 0)
+		if (run(&grid, state) != 0)
 			return 1;
-		maxenergized = max(energizedTiles(grid, size), maxenergized);
-		reset(grid, size);
+		maxenergized = max(energizedTiles(&grid), maxenergized);
+		reset(&grid);
 		/* right edge */
-		state = (struct State) { .pos={ .x=size.x-1, .y=i }, .dir=LEFT };
-		if (run(grid, size, state) != 0)
+		state = (struct State) { .pos={ .x=grid.size.x-1, .y=i }, .dir=LEFT };
+		if (run(&grid, state) != 0)
 			return 1;
-		maxenergized = max(energizedTiles(grid, size), maxenergized);
-		reset(grid, size);
+		maxenergized = max(energizedTiles(&grid), maxenergized);
+		reset(&grid);
 	}
 	/* top & bottom */
-	for (j = 1; j < size.x-1; j++) {
+	for (j = 1; j < grid.size.x-1; j++) {
 		/* top edge */
 		state = (struct State) { .pos={ .x=j, .y=0 }, .dir=DOWN };
-		if (run(grid, size, state) != 0)
+		if (run(&grid, state) != 0)
 			return 1;
-		maxenergized = max(energizedTiles(grid, size), maxenergized);
-		reset(grid, size);
+		maxenergized = max(energizedTiles(&grid), maxenergized);
+		reset(&grid);
 		/* bottom edge */
-		state = (struct State) { .pos={ .x=j, .y=size.y-1 }, .dir=UP };
-		if (run(grid, size, state) != 0)
+		state = (struct State) { .pos={ .x=j, .y=grid.size.y-1 }, .dir=UP };
+		if (run(&grid, state) != 0)
 			return 1;
-		maxenergized = max(energizedTiles(grid, size), maxenergized);
-		reset(grid, size);
+		maxenergized = max(energizedTiles(&grid), maxenergized);
+		reset(&grid);
 	}
 	printf("part 2: %u\n", maxenergized);
 
@@ -52,17 +51,17 @@ main()
 }
 
 void
-reset(struct Tile grid[HEIGHT][WIDTH], struct Coord size)
+reset(struct Grid *grid)
 {
 	int i, j;
 
-	for (i = 0; i < size.y; i++) {
-		for (j = 0; j < size.x; j++) {
-			grid[i][j].energized = 0;
-			grid[i][j].visited[LEFT] = 0;
-			grid[i][j].visited[RIGHT] = 0;
-			grid[i][j].visited[UP] = 0;
-			grid[i][j].visited[DOWN] = 0;
+	for (i = 0; i < grid->size.y; i++) {
+		for (j = 0; j < grid->size.x; j++) {
+			grid->tiles[i][j].energized = 0;
+			grid->tiles[i][j].visited[LEFT] = 0;
+			grid->tiles[i][j].visited[RIGHT] = 0;
+			grid->tiles[i][j].visited[UP] = 0;
+			grid->tiles[i][j].visited[DOWN] = 0;
 		}
 	}
 }

@@ -23,14 +23,19 @@ struct Tile {
 	short visited[NDIRECTIONS];
 };
 
+struct Grid {
+	struct Tile tiles[HEIGHT][WIDTH];
+	struct Coord size;
+};
+
 struct Stack {
 	struct State elems[STACKMAX];
 	int len;
 };
 
-void readinput(struct Tile grid[HEIGHT][WIDTH], struct Coord *size);
-int run(struct Tile grid[HEIGHT][WIDTH], struct Coord size, struct State state);
-unsigned int energizedTiles(const struct Tile grid[HEIGHT][WIDTH], struct Coord size);
+void readinput(struct Grid *grid);
+int run(struct Grid *grid, struct State state);
+unsigned int energizedTiles(const struct Grid *grid);
 int push(struct Stack *stack, struct State state);
 int pop(struct Stack *stack, struct State *state);
 
