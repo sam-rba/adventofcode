@@ -1,11 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"os"
+	"bufio"
 	"io"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -18,17 +18,27 @@ func (outer Range) contains(inner Range) bool {
 	return outer.lo <= inner.lo && outer.hi >= inner.hi
 }
 
+func overlap(a, b Range) bool {
+	return (a.lo <= b.lo && a.hi >= b.lo) || (a.lo <= b.hi && a.hi >= b.hi) ||
+		a.contains(b) || b.contains(a)
+}
+
 func main() {
 	pairs := make(chan [2]Range)
 	go parsePairs(os.Stdin, pairs)
-	score := 0
+	silver := 0
+	gold := 0
 	for pair := range pairs {
 		fmt.Println(pair)
 		if pair[0].contains(pair[1]) || pair[1].contains(pair[0]) {
-			score++
+			silver++
+		}
+		if overlap(pair[0], pair[1]) {
+			gold++
 		}
 	}
-	fmt.Println("silver:", score)
+	fmt.Println("silver:", silver)
+	fmt.Println("gold:", gold)
 }
 
 func parsePairs(in io.Reader, out chan<- [2]Range) {
@@ -54,7 +64,7 @@ func parsePairs(in io.Reader, out chan<- [2]Range) {
 func parseRange(str string) (Range, error) {
 	fields := strings.Split(str, "-")
 	if len(fields) != 2 {
-		return Range{}, MalformedRange{str}
+		return Range{}, fmt.Errorf("malformed range:", str)
 	}
 
 	lo, err := strconv.Atoi(fields[0])
@@ -63,12 +73,4 @@ func parseRange(str string) (Range, error) {
 	}
 	hi, err := strconv.Atoi(fields[1])
 	return Range{lo, hi}, err
-}
-
-type MalformedRange struct {
-	str string
-}
-
-func (e MalformedRange) Error() string {
-	return fmt.Sprint("malformed range:", e.str)
 }
