@@ -25,13 +25,24 @@ func (d *Dir) Name() string {
 }
 
 func (d *Dir) Size() int {
-	sum := 0
+	var sizes []chan int
 	for name, entry := range d.entries {
 		if name == "." || name == ".." {
 			continue
 		}
-		sum += entry.Size()
+		c := make(chan int)
+		sizes = append(sizes, c)
+		go func() {
+			c <- entry.Size()
+			close(c)
+		}()
 	}
+
+	sum := 0
+	for _, size := range sizes {
+		sum += <-size
+	}
+
 	return sum
 }
 
