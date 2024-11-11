@@ -8,12 +8,6 @@ import (
 
 const thresholdSize = 100_000
 
-type DirEntry interface {
-	IsDir() bool
-	Name() string
-	Size() int
-}
-
 func main() {
 	fs, err := parse(os.Stdin)
 	if err != nil {
