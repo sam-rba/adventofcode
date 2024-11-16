@@ -2,27 +2,29 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"log"
+	"os"
 )
 
-const (
-	numRounds = 20
-	worryDiv  = 3
-)
+const numRounds = 10000
 
 func main() {
 	monkeys, err := parse(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i := 0; i < numRounds; i++ {
-		round(monkeys, worryDiv)
+
+	lcm := 1
+	for _, monkey := range monkeys {
+		lcm *= monkey.divTest
 	}
-	fmt.Println("silver:", monkeyBusiness(mostActive(monkeys)))
+
+	for i := 0; i < numRounds; i++ {
+		round(monkeys, lcm)
+	}
+	fmt.Println("gold:", monkeyBusiness(mostActive(monkeys)))
 }
 
 func reduceWorry(item int, worryDiv int) int {
-	item /= worryDiv
-	return item
+	return item % worryDiv
 }
