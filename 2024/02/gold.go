@@ -12,10 +12,15 @@ func (r Report) isSafe() bool {
 		steps = reverse(r.levels)
 	}
 
+	bad := false
 	for step := range steps {
 		size := step.size()
 		if size < minStep || size > maxStep {
-			return false
+			if !bad {
+				bad = true
+			} else {
+				return false
+			}
 		}
 	}
 	return true
