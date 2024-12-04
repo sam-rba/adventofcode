@@ -3,13 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/sam-rba/workpool"
 	"io"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 const (
@@ -51,36 +50,6 @@ func reverse(s []int) <-chan Step {
 	return c
 }
 
-type WorkPool struct {
-	wg  sync.WaitGroup
-	sem chan int
-}
-
-func NewWorkPool(size int) WorkPool {
-	return WorkPool{
-		sync.WaitGroup{},
-		make(chan int, size),
-	}
-}
-
-func (pool *WorkPool) Spawn(task func()) {
-	pool.wg.Add(1)
-	pool.sem <- 0
-	go func() {
-		task()
-		<-pool.sem
-		pool.wg.Done()
-	}()
-}
-
-func (pool *WorkPool) Wait() {
-	pool.wg.Wait()
-}
-
-func (pool *WorkPool) Close() {
-	close(pool.sem)
-}
-
 func main() {
 	reports := make(chan Report)
 	go parse(os.Stdin, reports)
@@ -117,7 +86,7 @@ func countSafe(reports <-chan Report) int {
 	numSafe := make(chan int)
 	go count(safe, numSafe)
 
-	pool := NewWorkPool(2 * runtime.NumCPU())
+	pool := workpool.New(workpool.DefaultSize)
 	for report := range reports {
 		pool.Spawn(func() {
 			if report.isSafe() {

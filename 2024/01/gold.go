@@ -2,41 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/sam-rba/workpool"
 	"os"
-	"runtime"
 	"slices"
-	"sync"
 )
-
-type WorkPool struct {
-	wg  sync.WaitGroup
-	sem chan int
-}
-
-func NewWorkPool(size int) WorkPool {
-	return WorkPool{
-		sync.WaitGroup{},
-		make(chan int, size),
-	}
-}
-
-func (pool *WorkPool) Spawn(task func()) {
-	pool.wg.Add(1)
-	pool.sem <- 0
-	go func() {
-		task()
-		<-pool.sem
-		pool.wg.Done()
-	}()
-}
-
-func (pool *WorkPool) Wait() {
-	pool.wg.Wait()
-}
-
-func (pool *WorkPool) Close() {
-	close(pool.sem)
-}
 
 func main() {
 	leftChan, rightChan := make(chan int), make(chan int)
@@ -50,7 +19,7 @@ func main() {
 	go sum(score, total)
 
 	left, right := collect(leftChan), collect(rightSortedChan)
-	pool := NewWorkPool(2 * runtime.NumCPU())
+	pool := workpool.New(workpool.DefaultSize)
 	for _, l := range left {
 		pool.Spawn(func() {
 			score <- similarityScore(l, right)
