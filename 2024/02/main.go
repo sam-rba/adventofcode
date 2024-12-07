@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"github.com/sam-rba/workpool"
 	"io"
 	"log"
@@ -84,7 +85,7 @@ func parseReport(str string) (Report, error) {
 func countSafe(reports <-chan Report) int {
 	safe := make(chan int)
 	numSafe := make(chan int)
-	go count(safe, numSafe)
+	go lib.Count(safe, numSafe)
 
 	pool := workpool.New(workpool.DefaultSize)
 	for report := range reports {
@@ -99,13 +100,4 @@ func countSafe(reports <-chan Report) int {
 	close(safe)
 
 	return <-numSafe
-}
-
-func count[T any](in <-chan T, num chan<- int) {
-	defer close(num)
-	n := 0
-	for range in {
-		n++
-	}
-	num <- n
 }

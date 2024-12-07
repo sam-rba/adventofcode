@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"github.com/sam-rba/workpool"
 	"os"
 	"slices"
@@ -13,7 +14,7 @@ func main() {
 	start := guard.pos
 
 	loops, numLoops := make(chan int), make(chan int)
-	go count(loops, numLoops)
+	go lib.Count(loops, numLoops)
 
 	pool := workpool.New(workpool.DefaultSize)
 	for y := bounds.min.y; y <= bounds.max.y; y++ {
@@ -69,13 +70,4 @@ func isLoop(guard Guard, obstacles []Point, bounds Rectangle) bool {
 	}
 
 	return false
-}
-
-func count[T any](c <-chan T, num chan<- int) {
-	n := 0
-	for range c {
-		n++
-	}
-	num <- n
-	close(num)
 }

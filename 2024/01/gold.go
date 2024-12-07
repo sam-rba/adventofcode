@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"github.com/sam-rba/workpool"
 	"os"
 	"slices"
@@ -12,13 +13,13 @@ func main() {
 	go parse(os.Stdin, leftChan, rightChan)
 
 	rightSortedChan := make(chan int)
-	go sort(rightChan, rightSortedChan)
+	go lib.Sort(rightChan, rightSortedChan)
 
 	score := make(chan int)
 	total := make(chan int)
-	go sum(score, total)
+	go lib.Sum(score, total)
 
-	left, right := collect(leftChan), collect(rightSortedChan)
+	left, right := lib.Collect(leftChan), lib.Collect(rightSortedChan)
 	pool := workpool.New(workpool.DefaultSize)
 	for _, l := range left {
 		pool.Spawn(func() {
@@ -30,14 +31,6 @@ func main() {
 	close(score)
 
 	fmt.Println("gold:", <-total)
-}
-
-func collect(c <-chan int) []int {
-	var s []int
-	for v := range c {
-		s = append(s, v)
-	}
-	return s
 }
 
 func similarityScore(leftVal int, right []int) int {

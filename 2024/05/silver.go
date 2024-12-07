@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"github.com/sam-rba/workpool"
 	"log"
 	"os"
@@ -20,7 +21,7 @@ func main() {
 
 	ordered, middle, total := make(chan []int), make(chan int), make(chan int)
 	go extractMiddle(ordered, middle)
-	go sum(middle, total)
+	go lib.Sum(middle, total)
 
 	pool := workpool.New(workpool.DefaultSize)
 	for update := range updates {

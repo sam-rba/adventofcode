@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"log"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -33,29 +32,6 @@ func parse(in io.Reader, left, right chan<- int) {
 		left <- l
 		right <- r
 	}
-}
-
-func sort(in <-chan int, out chan<- int) {
-	defer close(out)
-
-	s := make([]int, 0)
-	for v := range in {
-		i, _ := slices.BinarySearch(s, v)
-		s = slices.Insert(s, i, v)
-	}
-
-	for _, v := range s {
-		out <- v
-	}
-}
-
-func sum(in <-chan int, out chan<- int) {
-	defer close(out)
-	sum := 0
-	for v := range in {
-		sum += v
-	}
-	out <- sum
 }
 
 func abs(x int) int {

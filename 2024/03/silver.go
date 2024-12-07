@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"github.com/sam-rba/workpool"
 	"io"
 	"log"
@@ -19,7 +20,7 @@ func main() {
 	matches := mulInstr.FindAllStringSubmatch(string(input), -1)
 
 	results, total := make(chan int), make(chan int)
-	go sum(results, total)
+	go lib.Sum(results, total)
 	pool := workpool.New(workpool.DefaultSize)
 	for _, match := range matches {
 		pool.Spawn(func() {
@@ -41,13 +42,4 @@ func main() {
 	close(results)
 
 	fmt.Println("silver:", <-total)
-}
-
-func sum(in <-chan int, out chan<- int) {
-	defer close(out)
-	sum := 0
-	for v := range in {
-		sum += v
-	}
-	out <- sum
 }

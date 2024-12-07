@@ -37,12 +37,3 @@ func extractMiddle(updates <-chan []int, middle chan<- int) {
 		middle <- update[len(update)/2]
 	}
 }
-
-func sum(in <-chan int, out chan<- int) {
-	defer close(out)
-	sum := 0
-	for v := range in {
-		sum += v
-	}
-	out <- sum
-}

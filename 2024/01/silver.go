@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sam-rba/adventofcode/lib"
 	"os"
 )
 
@@ -10,14 +11,14 @@ func main() {
 	go parse(os.Stdin, left, right)
 
 	leftSorted, rightSorted := make(chan int), make(chan int)
-	go sort(left, leftSorted)
-	go sort(right, rightSorted)
+	go lib.Sort(left, leftSorted)
+	go lib.Sort(right, rightSorted)
 
 	dist := make(chan int)
 	go distance(leftSorted, rightSorted, dist)
 
 	total := make(chan int)
-	go sum(dist, total)
+	go lib.Sum(dist, total)
 	fmt.Println("silver:", <-total)
 }
 
