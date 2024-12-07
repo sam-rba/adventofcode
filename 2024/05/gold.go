@@ -81,8 +81,6 @@ func putInOrder(update []int, inEdges map[int][]int) []int {
 	nodes := make([]int, len(update))
 	copy(nodes, update)
 
-	edges := copyEdges(inEdges)
-
 	ordered := make([]int, 0, len(update))
 
 	for len(nodes) > 0 {
@@ -91,22 +89,11 @@ func putInOrder(update []int, inEdges map[int][]int) []int {
 			log.Fatal("all nodes have incoming edges")
 		}
 		node := nodes[i]
-		nodes = append(nodes[:i], nodes[i+1:]...)
+		nodes = slices.Delete(nodes, i, i+1)
 		ordered = append(ordered, node)
-		removeOutEdges(node, edges)
 	}
 
 	return ordered
-}
-
-func copyEdges(edges map[int][]int) map[int][]int {
-	cpy := make(map[int][]int)
-	for node, incident := range edges {
-		cpyIncident := make([]int, len(incident))
-		copy(cpyIncident, incident)
-		cpy[node] = cpyIncident
-	}
-	return cpy
 }
 
 func indexWithNoInEdges(nodes []int, inEdges map[int][]int) (int, bool) {
@@ -125,13 +112,4 @@ func isIncidentFromAny(node int, nodes []int, inEdges []int) bool {
 		}
 	}
 	return false
-}
-
-func removeOutEdges(srcNode int, inEdges map[int][]int) {
-	for dstNode, incident := range inEdges {
-		i, ok := slices.BinarySearch(incident, srcNode)
-		if ok {
-			inEdges[dstNode] = slices.Delete(incident, i, i+1)
-		}
-	}
 }
