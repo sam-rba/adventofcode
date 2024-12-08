@@ -61,13 +61,10 @@ func parse(in io.Reader) (nodes []Antenna, bounds Rectangle) {
 				continue
 			}
 
-			node := Antenna{
+			nodes = append(nodes, Antenna{
 				pos:  Point{x, y},
 				freq: freq,
-			}
-			if i, ok := slices.BinarySearchFunc(nodes, node, cmpPos); !ok {
-				nodes = slices.Insert(nodes, i, node)
-			}
+			})
 		}
 	}
 	bounds.max.y = y - 1
