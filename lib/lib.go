@@ -44,3 +44,20 @@ func Sort[T cmp.Ordered](in <-chan T, sorted chan<- T) {
 		sorted <- e
 	}
 }
+
+type Point struct {
+	X, Y int
+}
+
+func CmpPoint(a, b Point) int {
+	if a.Y < b.Y {
+		return -1
+	} else if a.Y > b.Y {
+		return 1
+	} else if a.X < b.X {
+		return -1
+	} else if a.X > b.X {
+		return 1
+	}
+	return 0
+}
