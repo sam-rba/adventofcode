@@ -61,3 +61,5 @@ func CmpPoint(a, b Point) int {
 	}
 	return 0
 }
+
+type Vector Point

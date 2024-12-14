@@ -4,3 +4,5 @@ github.com/mazznoer/csscolorparser v0.1.5 h1:Wr4uNIE+pHWN3TqZn2SGpA2nLRG064gB7Wd
 github.com/mazznoer/csscolorparser v0.1.5/go.mod h1:OQRVvgCyHDCAquR1YWfSwwaDcM0LhnSffGnlbOew/3I=
 github.com/sam-rba/workpool v0.0.0-20241204190741-65baa863b7ff h1:KNgjN1ZGvPkWXXziiTI6LcR22dxJfFs3H3+qOk8YIVU=
 github.com/sam-rba/workpool v0.0.0-20241204190741-65baa863b7ff/go.mod h1:iB/SQU2RFe2zcdab2LNh6rp/6Wj62vArhy3TGIEfAlQ=
+golang.org/x/sync v0.10.0 h1:3NQrjDixjgGwUOCaF8w2+VYHv0Ve/vGYSbdkTa98gmQ=
+golang.org/x/sync v0.10.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
