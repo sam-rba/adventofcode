@@ -9,23 +9,6 @@ import (
 	"runtime"
 )
 
-const steps = 100
-
-const (
-	widthDefault  = 101
-	heightDefault = 103
-)
-
-var (
-	width  = flag.Int("w", widthDefault, "grid width")
-	height = flag.Int("h", heightDefault, "grid height")
-)
-
-type Robot struct {
-	p lib.Point
-	v lib.Vector
-}
-
 type Quadrant int
 
 const (
@@ -84,11 +67,6 @@ func mul(factors <-chan int, product chan<- int) {
 	product <- prod
 }
 
-func (r *Robot) move(steps int) {
-	r.p.X = mod(r.p.X+steps*r.v.X, *width)
-	r.p.Y = mod(r.p.Y+steps*r.v.Y, *height)
-}
-
 func quadrant(p lib.Point) Quadrant {
 	mid := lib.Point{*width / 2, *height / 2}
 
@@ -107,8 +85,4 @@ func quadrant(p lib.Point) Quadrant {
 	}
 
 	return QNone
-}
-
-func mod(a, b int) int {
-	return (a%b + b) % b
 }
