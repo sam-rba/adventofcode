@@ -75,3 +75,7 @@ func CmpPoint(a, b Point) int {
 }
 
 type Vector Point
+
+func PtAddVec(p Point, v Vector) Point {
+	return p.Add(Point(v))
+}
