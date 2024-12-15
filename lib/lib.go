@@ -45,20 +45,31 @@ func Sort[T cmp.Ordered](in <-chan T, sorted chan<- T) {
 	}
 }
 
+func Min[T cmp.Ordered](in <-chan T, min chan<- T) {
+	defer close(min)
+	minVal := <-in
+	for v := range in {
+		if cmp.Less(v, minVal) {
+			minVal = v
+		}
+	}
+	min <- minVal
+}
+
 type Point struct {
 	X, Y int
 }
 
 func (p1 Point) Add(p2 Point) Point {
-	return Point{p1.X+p2.X, p1.Y+p2.Y}
+	return Point{p1.X + p2.X, p1.Y + p2.Y}
 }
 
 func (p1 Point) Sub(p2 Point) Point {
-	return Point{p1.X-p2.X, p1.Y-p2.Y}
+	return Point{p1.X - p2.X, p1.Y - p2.Y}
 }
 
 func (p1 Point) Mul(p2 Point) Point {
-	return Point{p1.X*p2.X, p1.Y*p2.Y}
+	return Point{p1.X * p2.X, p1.Y * p2.Y}
 }
 
 func CmpPoint(a, b Point) int {
