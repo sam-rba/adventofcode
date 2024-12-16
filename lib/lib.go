@@ -87,6 +87,14 @@ func CmpPoint(a, b Point) int {
 
 type Vector Point
 
+func (v Vector) RotateCW() Vector {
+	return Vector{v.Y, -v.X}
+}
+
+func (v Vector) RotateCCW() Vector {
+	return Vector{-v.Y, v.X}
+}
+
 func PtAddVec(p Point, v Vector) Point {
 	return p.Add(Point(v))
 }
