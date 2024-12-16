@@ -48,13 +48,17 @@ func main() {
 	}
 	start := Node{startPos, startDir}
 
-	dists := dijkstra(start, grid)
+	dists, paths := dijkstra(start, grid)
 
 	endPos, ok := find(endTile, grid)
 	if !ok {
 		log.Fatal("can't find end tile")
 	}
+
+	print(grid, dists, paths, endPos)
+
 	fmt.Println("silver:", minDist(endPos, dists))
+	fmt.Println("gold:", countPathNodes(endPos, dists, paths))
 }
 
 func parse(in io.Reader) ([][]byte, error) {
@@ -83,9 +87,10 @@ func find(target byte, grid [][]byte) (lib.Point, bool) {
 	return lib.Point{}, false
 }
 
-func dijkstra(start Node, grid [][]byte) (dists map[Node]int) {
+func dijkstra(start Node, grid [][]byte) (dists map[Node]int, paths map[Node][]Node) {
 	dists = build(grid)
 	dists[start] = 0
+	paths = make(map[Node][]Node)
 
 	q := prque.New[int, Node](func(data Node, index int) {})
 	q.Push(start, 0)
@@ -97,23 +102,65 @@ func dijkstra(start Node, grid [][]byte) (dists map[Node]int) {
 			alt := dists[n] + weight
 			if alt < dists[adj] {
 				dists[adj] = alt
+				paths[adj] = []Node{n}
 				q.Push(adj, alt)
+			} else if alt == dists[adj] {
+				paths[adj] = append(paths[adj], n)
 			}
 		}
 	}
 
-	return dists
+	return dists, paths
 }
 
 func minDist(pos lib.Point, dists map[Node]int) int {
-	nodes := allOrientations(pos)
 	min := infinity
-	for _, n := range nodes {
+	for _, n := range allOrientations(pos) {
 		if dist, ok := dists[n]; ok && dist < min {
 			min = dist
 		}
 	}
 	return min
+}
+
+func countPathNodes(end lib.Point, dists map[Node]int, paths map[Node][]Node) int {
+	pathNodes, unique, num := make(chan Node), make(chan Node), make(chan int)
+	go lib.UniqueFunc(pathNodes, unique, cmpNodePos)
+	go lib.Count(unique, num)
+
+	traverseShortestPaths(end, dists, paths, func(n Node) {
+		pathNodes <- n
+	})
+	close(pathNodes)
+	return <-num
+}
+
+func print(grid [][]byte, dists map[Node]int, paths map[Node][]Node, end lib.Point) {
+	traverseShortestPaths(end, dists, paths, func(n Node) {
+		grid[n.pos.Y][n.pos.X] = 'O'
+	})
+
+	for y := range grid {
+		fmt.Println(string(grid[y]))
+	}
+}
+
+func traverseShortestPaths(end lib.Point, dists map[Node]int, paths map[Node][]Node, f func(n Node)) {
+	minPathLen := minDist(end, dists)
+	for _, n := range allOrientations(end) {
+		if dists[n] == minPathLen {
+			traverse(n, paths, f)
+		}
+	}
+}
+
+func traverse(end Node, paths map[Node][]Node, f func(n Node)) {
+	f(end)
+	if prev, ok := paths[end]; ok {
+		for _, n := range prev {
+			traverse(n, paths, f)
+		}
+	}
 }
 
 func build(grid [][]byte) (dists map[Node]int) {
@@ -139,7 +186,7 @@ func neighbors(n Node, grid [][]byte) map[Node]int {
 	nbrs := make(map[Node]int)
 	nbrs[left] = rotateCost
 	nbrs[right] = rotateCost
-	if grid[front.pos.Y][front.pos.X] != wall {
+	if front.pos.Y < len(grid) && front.pos.X < len(grid[0]) && grid[front.pos.Y][front.pos.X] != wall {
 		nbrs[front] = forwardCost
 	}
 	return nbrs
@@ -152,4 +199,15 @@ func allOrientations(p lib.Point) []Node {
 		{p, south},
 		{p, west},
 	}
+}
+
+func cmpNode(n1, n2 Node) int {
+	if ord := cmpNodePos(n1, n2); ord != 0 {
+		return ord
+	}
+	return lib.CmpVec(n1.dir, n2.dir)
+}
+
+func cmpNodePos(n1, n2 Node) int {
+	return lib.CmpPoint(n1.pos, n2.pos)
 }

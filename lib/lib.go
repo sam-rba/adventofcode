@@ -56,6 +56,23 @@ func Min[T cmp.Ordered](in <-chan T, min chan<- T) {
 	min <- minVal
 }
 
+func UniqueFunc[T any](in <-chan T, out chan<- T, cmp func(T, T) int) {
+	defer close(out)
+	var seen []T
+	for v := range in {
+		if i, ok := slices.BinarySearchFunc(seen, v, cmp); !ok {
+			seen = slices.Insert(seen, i, v)
+		}
+	}
+	for _, v := range seen {
+		out <- v
+	}
+}
+
+func Unique[T cmp.Ordered](in <-chan T, out chan<- T) {
+	UniqueFunc(in, out, cmp.Compare)
+}
+
 type Point struct {
 	X, Y int
 }
@@ -93,6 +110,10 @@ func (v Vector) RotateCW() Vector {
 
 func (v Vector) RotateCCW() Vector {
 	return Vector{-v.Y, v.X}
+}
+
+func CmpVec(v1, v2 Vector) int {
+	return CmpPoint(Point(v1), Point(v2))
 }
 
 func PtAddVec(p Point, v Vector) Point {
