@@ -1,0 +1,19 @@
+project Y2025 is
+	for Source_Dirs use ("01");
+	for Object_Dir use "obj";
+	for Exec_Dir use "bin";
+	for Main use ("day01.adb");
+
+	package Builder is
+	end Builder;
+
+	package Compiler is
+		for Default_Switches ("Ada") use ("-gnat95");
+	end Compiler;
+
+	package Binder is
+	end Binder;
+
+	package Linker is
+	end Linker;
+end Y2025;
