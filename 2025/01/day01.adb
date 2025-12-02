@@ -3,23 +3,29 @@ with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Day01 is
+	--
 	-- Types
-	Num_Pos : constant Integer := 100;
-	type Position is mod Num_Pos;
+	--
+	NUM_POS: constant Natural := 100; -- number of dial positions
+	type Position is mod NUM_POS; -- dial position
 
 	type Direction is (LEFT, RIGHT);
 
 	type Rotation is record
-		Dir: Direction;
-		Distance: Natural;
+		Dir: Direction; -- L/R
+		Distance: Natural; -- number of clicks
 	end record;
 	-- Rotation is a line of the input file.
 
+	--
 	-- Constants
-	Start: constant Position := 50;
+	--
+	START: constant Position := 50;
 
+	--
 	-- Functions
-	function Direction_From_Char(C: in Character) return Direction is
+	--
+	function Direction_From_Char(C: Character) return Direction is
 	begin
 		case C is
 			when 'L' => return LEFT;
@@ -28,6 +34,40 @@ procedure Day01 is
 		end case;
 	end;
 
+	-- Count the number of times the dial touches zero during a rotation.
+	function Zero_Crossings(Pos: Position; Rot: Rotation) return Natural is
+		Dist_To_Zero: Natural;
+	begin
+		-- Compute distance to zero
+		if Pos /= 0 then
+			case Rot.Dir is
+				when LEFT => Dist_To_Zero := Natural(Pos);
+				when RIGHT => Dist_To_Zero := NUM_POS - Natural(Pos);
+			end case;
+		else
+			Dist_To_Zero := NUM_POS;
+		end if;
+
+		-- Count number of times dial touches zero
+		if Rot.Distance >= Dist_To_Zero then
+			return 1 + (Rot.Distance - Dist_To_Zero) / NUM_POS;
+		else
+			return 0;
+		end if;
+	end;
+
+	-- Rotate the dial, return its new position.
+	function Rotate(Pos: Position; Rot: Rotation) return Position is
+	begin
+		case Rot.Dir is
+			when LEFT => return Position((Integer(Pos) - Rot.Distance) mod NUM_POS);
+			when RIGHT => return Position((Integer(Pos) + Rot.Distance) mod NUM_POS);
+		end case;
+	end;
+
+	--
+	-- Tasks
+	--
 	task Parser is
 		entry Next(Rot: out Rotation; Eof: out Boolean);
 	end;
@@ -52,9 +92,11 @@ procedure Day01 is
 		end loop;
 	end;
 
+	--
 	-- Variables
+	--
 	Silver, Gold: Natural := 0;
-	Pos: Position := Start;
+	Pos: Position := START;
 	Rot: Rotation;
 	Eof: Boolean;
 
@@ -65,17 +107,9 @@ begin
 		Parser.Next(Rot, Eof);
 		exit when Eof;
 
-		-- Count zero crossings
-		-- This is very stupid
-		for I in 1..Rot.Distance loop
-			case Rot.Dir is
-				when LEFT => Pos := Pos - 1;
-				when RIGHT => Pos := Pos + 1;
-			end case;
-			if Pos = 0 then
-				Gold := Gold + 1;
-			end if;
-		end loop;
+		-- Rotate dial and count zero crossings
+		Gold := Gold + Zero_Crossings(Pos, Rot);
+		Pos := Rotate(Pos, Rot);
 		if Pos = 0 then
 			Silver := Silver + 1;
 		end if;
