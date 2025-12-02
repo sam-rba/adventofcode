@@ -6,10 +6,8 @@ package Dial is
 
 	type Rotation is record
 		Dir : Direction;
-		Distance : Position;
+		Distance : Natural;
 	end record;
 
 	Start : constant Position := 50;
-
-	function Rotate(Pos : in Position; Rot : in Rotation) return Position;
 end Dial;

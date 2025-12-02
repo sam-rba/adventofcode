@@ -17,7 +17,6 @@ package body Parse is
 		Line : String(1..8);
 		Len : Natural;
 		Last : Positive;
-		Distance : Integer;
 		Done : Boolean;
 	begin
 		Done := False;
@@ -26,8 +25,7 @@ package body Parse is
 				if not Ada.Text_IO.End_Of_File then
 					Ada.Text_IO.Get_Line(Line, Len);
 					R.Dir := Direction_From_Char(Line(1)); -- L/R
-					Ada.Integer_Text_IO.Get(Line(2..Len), Distance, Last);
-					R.Distance := Dial.Position(Distance mod Dial.Num_Pos);
+					Ada.Integer_Text_IO.Get(Line(2..Len), R.Distance, Last);
 				else
 					Eof := True;
 					Done := True;
