@@ -1,39 +1,76 @@
-with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-
-with Dial; use Dial;
-with Parse;
-
-
+with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Day01 is
-	Silver, Gold: Natural;
-	Pos: Dial.Position;
-	Rot: Dial.Rotation;
-	Eof: Boolean;
+	-- Types
+	Num_Pos : constant Integer := 100;
+	type Position is mod Num_Pos;
 
-	function Zero_Crossings(Pos: Dial.Position; Rot: Dial.Rotation) return Natural is
+	type Direction is (LEFT, RIGHT);
+
+	type Rotation is record
+		Dir: Direction;
+		Distance: Natural;
+	end record;
+	-- Rotation is a line of the input file.
+
+	-- Constants
+	Start: constant Position := 50;
+
+	-- Functions
+	function Direction_From_Char(C: in Character) return Direction is
 	begin
-		return 0;
+		case C is
+			when 'L' => return LEFT;
+			when 'R' => return RIGHT;
+			when others => raise Constraint_Error;
+		end case;
 	end;
 
-begin
-	Silver := 0;
-	Gold := 0;
-	Pos := Dial.Start;
+	task Parser is
+		entry Next(Rot: out Rotation; Eof: out Boolean);
+	end;
+	task body Parser is
+		Line: String(1..8);
+		Len: Natural;
+		Last: Positive;
+		Done: Boolean := False;
+	begin
+		while not Done loop
+			accept Next(Rot: out Rotation; Eof: out Boolean) do
+				if not End_Of_File then
+					Get_Line(Line, Len);
+					Rot.Dir := Direction_From_Char(Line(1)); -- L/R
+					Ada.Integer_Text_IO.Get(Line(2..Len), Rot.Distance, Last);
+					Eof := False;
+				else
+					Eof := True;
+					Done := True;
+				end if;
+			end;
+		end loop;
+	end;
 
+	-- Variables
+	Silver, Gold: Natural := 0;
+	Pos: Position := Start;
+	Rot: Rotation;
+	Eof: Boolean;
+
+begin
 	-- For each line of file
 	loop
-		-- Parse next line of file
-		Parse.Parser.Next(Rot, Eof);
+		-- Parse next line
+		Parser.Next(Rot, Eof);
 		exit when Eof;
 
 		-- Count zero crossings
 		-- This is very stupid
 		for I in 1..Rot.Distance loop
 			case Rot.Dir is
-				when Dial.L => Pos := Pos - 1;
-				when Dial.R => Pos := Pos + 1;
+				when LEFT => Pos := Pos - 1;
+				when RIGHT => Pos := Pos + 1;
 			end case;
 			if Pos = 0 then
 				Gold := Gold + 1;
