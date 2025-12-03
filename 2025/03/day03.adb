@@ -2,7 +2,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Day03 is
-	subtype Joltage is Natural;
+	subtype Joltage is Long_Integer;
 	subtype Bank is Unbounded_String;
 
 	procedure readBank(bnk: out Bank; eof: out Boolean) is
@@ -18,43 +18,52 @@ procedure Day03 is
 		end if;
 	end;
 
-	function maxJoltage(bnk: Bank) return Joltage is
-		max1, max2: Character;
-		max1idx: Natural;
-		batt: Character;
+	function maxCharIdx(s: Unbounded_String) return Positive is
+	-- Index of greatest character in string.
+
+		maxIdx: Positive := 1;
+		max, c: Character;
 	begin
-		max1 := Element(bnk, 1);
-		max1idx := 1;
-		for i in 2..Length(bnk)-1 loop
-			batt := Element(bnk, i);
-			if batt > max1 then
-				max1 := batt;
-				max1Idx := i;
+		max := Element(s, 1);
+		for i in 2..Length(s) loop
+			c := Element(s, i);
+			if c > max then
+				max := c;
+				maxIdx := i;
 			end if;
 		end loop;
+		return maxIdx;
+	end;
 
-		max2 := Element(bnk, max1idx+1);
-		for i in max1idx+2..Length(bnk) loop
-			max2 := Character'Max(max2, Element(bnk, i));
-			batt := Element(bnk, i);
-			if batt > max2 then
-				max2 := batt;
-			end if;
-		end loop;
+	function maxJoltage(bnk: Bank; ncells: Positive) return Joltage is
+	-- Maximum possible joltage by enabling N cells of the bank.
 
-		return Joltage'Value((1=>max1)) * 10 + Joltage'Value((1=>max2));
+		i: Positive;
+		cell: Joltage;
+	begin
+		i := maxCharIdx(Head(bnk, Length(bnk)-(ncells-1)));
+		cell := Joltage'Value((1=>Element(bnk, i)));
+
+		if ncells > 1 then
+			return cell * 10**(ncells-1)
+				+ maxJoltage(Tail(bnk, Length(bnk)-i), ncells-1);
+		else
+			return cell;
+		end if;
 	end;
 
 	bnk: Bank;
 	eof: Boolean;
-	silver: Joltage := 0;
+	silver, gold: Joltage := 0;
 begin
 	loop
 		readBank(bnk, eof);
 		exit when eof;
 
-		silver := silver + maxJoltage(bnk);
+		silver := silver + maxJoltage(bnk, 2);
+		gold := gold + maxJoltage(bnk, 12);
 	end loop;
 
-	Put_Line("Silver: " & Natural'Image(silver));
+	Put_Line("Silver: " & Joltage'Image(silver)
+		& ", Gold: " & Joltage'Image(gold));
 end;
