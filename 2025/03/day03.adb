@@ -1,24 +1,31 @@
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Strings.Bounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Day03 is
+	MAX_BANK_SIZE: constant Positive := 128;
+
+	package B_Str is new
+		Ada.Strings.Bounded.Generic_Bounded_Length
+			(Max => MAX_BANK_SIZE);
+	use B_Str;
+
 	subtype Joltage is Long_Integer;
-	subtype Bank is Unbounded_String;
+	subtype Bank is Bounded_String;
 
 	procedure readBank(bnk: out Bank; eof: out Boolean) is
-		line: String(1..256);
+		line: String(1..B_Str.Max_Length);
 		len: Natural;
 	begin
 		if not End_Of_File then
 			Get_Line(line, len);
-			bnk := To_Unbounded_String(line(1..len));
+			bnk := To_Bounded_String(line(1..len));
 			eof := False;
 		else
 			eof := True;
 		end if;
 	end;
 
-	function maxCharIdx(s: Unbounded_String) return Positive is
+	function maxCharIdx(s: Bounded_String) return Positive is
 	-- Index of greatest character in string.
 
 		maxIdx: Positive := 1;
