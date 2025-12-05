@@ -2,7 +2,7 @@ with Ada.Long_Integer_Text_IO;
 with Ada.Strings.Bounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
-with List;
+with Lists;
 
 procedure Day05 is
 	MAX_RANGES: constant Positive := 256;
@@ -14,7 +14,9 @@ procedure Day05 is
 		lo, hi: Identifier;
 	end record;
 
-	package IdentifierRangeList is new List(IdentifierRange, MAX_RANGES);
+	package IdentifierRangeLists is new Lists.Generic_list(IdentifierRange, MAX_RANGES);
+	use IdentifierRangeLists;
+	subtype IdentifierRangeList is IdentifierRangeLists.List;
 
 	package B_Str is new Ada.Strings.Bounded.Generic_Bounded_Length(MAX_LINE);
 	use B_Str;
@@ -32,7 +34,7 @@ procedure Day05 is
 		return rng;
 	end;
 
-	procedure parseIdentifierRanges is
+	procedure parseIdentifierRanges(idRanges: out IdentifierRangeList)  is
 		line: String(1..MAX_LINE);
 		len: Natural;
 		rng: IdentifierRange;
@@ -41,7 +43,7 @@ procedure Day05 is
 			Get_Line(line, len);
 			exit when len < 1; -- blank line delimiting fresh and available IDs
 			rng := parseIdentifierRange(To_Bounded_String(line(1..len)));
-			IdentifierRangeList.Append(rng);
+			Append(idRanges, rng);
 		end loop;
 	end;
 
@@ -55,25 +57,26 @@ procedure Day05 is
 		return id;
 	end;
 
-	function isFresh(id: Identifier) return Boolean is
-		rng: IdentifierRange;
+	function isFresh(id: Identifier; freshRanges: IdentifierRangeList) return Boolean is
+		fresh: IdentifierRange;
 	begin
-		for i in 1..IdentifierRangeList.Length loop
-			rng := IdentifierRangeList.Element(i);
-			if id >= rng.lo and id <= rng.hi then
+		for i in 1..Length(freshRanges) loop
+			fresh := Element(freshRanges, i);
+			if id >= fresh.lo and id <= fresh.hi then
 				return True;
 			end if;
 		end loop;
 		return False;
 	end;
 
+	idRanges: IdentifierRangeList;
 	id: Identifier;
 	silver: Natural := 0;
 begin
-	parseIdentifierRanges;
+	parseIdentifierRanges(idRanges);
 	while not End_Of_File loop
 		id := parseId;
-		if isFresh(id) then
+		if isFresh(id, idRanges) then
 			silver := silver + 1;
 		end if;
 	end loop;
