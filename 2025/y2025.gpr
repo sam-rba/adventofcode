@@ -1,8 +1,8 @@
 project Y2025 is
-	for Source_Dirs use ("01", "02", "03");
+	for Source_Dirs use ("01", "02", "03", "04", "05");
 	for Object_Dir use "obj";
 	for Exec_Dir use "bin";
-	for Main use ("day01.adb", "day02.adb", "day03.adb");
+	for Main use ("day01.adb", "day02.adb", "day03.adb", "day04.adb", "day05.adb");
 
 	package Builder is
 	end Builder;
