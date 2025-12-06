@@ -9,8 +9,9 @@ package Lists is
 		subtype Length_Range is Natural range 0..Max_Length;
 
 		function Length(Source: List) return Length_Range;
-		procedure Append(Source: in out List; New_Item: Item);
 		function Element(Source: List; Index: Positive) return Item;
+		procedure Append(Source: in out List; New_Item: Item);
+		procedure Insert(Source: in out List; New_Item: in Item; Index: in Positive);
 
 	private
 		type ItemArray is array (1..Max_Length) of Item;
